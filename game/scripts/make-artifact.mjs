@@ -51,11 +51,43 @@ const html = `<meta charset="utf-8" />
     -webkit-tap-highlight-color: transparent;
   }
 
+  #phone { flex: 1; width: 100%; min-width: 0; min-height: 0; display: flex; }
   #stage {
     flex: 1; width: 100%; min-width: 0; min-height: 0; position: relative;
     touch-action: none;   /* mọi cử chỉ trên board là của game, không phải trình duyệt */
   }
   #stage canvas { display: block; }
+
+  /* MÁY TÍNH: dựng khung điện thoại giả.
+     Ngưỡng đặt theo CẢ hai chiều: máy để bàn rộng ≥760 và cao ≥620. Điện thoại
+     xoay ngang có thể rộng 800 nhưng chỉ cao ~400, nên điều kiện chiều cao là thứ
+     giữ cho máy thật luôn chơi toàn màn hình.
+     Cỡ khung suy từ CHIỀU CAO cửa sổ theo tỉ lệ 9:19.5 của máy đời mới, nên khung
+     luôn vừa màn hình chứ không bao giờ tràn. */
+  @media (min-width: 760px) and (min-height: 620px) {
+    /* mặt bàn: sáng ở giữa, tối dần ra rìa — có nguồn sáng thì vật mới nổi khối */
+    #ssj-wrap {
+      display: grid; place-items: center; padding: 22px;
+      background: radial-gradient(120% 90% at 50% 30%, #2e2760, #140f2b 62%, #0a0718);
+    }
+    #phone {
+      --screen-h: min(calc(100dvh - 44px), 880px);
+      flex: 0 0 auto;
+      height: var(--screen-h);
+      width: min(calc(var(--screen-h) * 9 / 19.5), calc(100vw - 44px));
+      padding: 13px;
+      border-radius: 50px;
+      /* Thân máy TỐI HƠN mặt bàn. Bản trước để thân sáng hơn nền nên cả cái khung
+         chìm nghỉm, đọc ra một hình bo góc chứ không ra cái điện thoại. */
+      background: linear-gradient(155deg, #4b447e, #16112c 22%, #0b0819 78%, #241d47);
+      box-shadow:
+        0 0 0 1.5px rgba(255, 255, 255, 0.16) inset,   /* vành kim loại bắt sáng */
+        0 0 0 2px rgba(0, 0, 0, 0.7),                  /* mép ngoài */
+        0 26px 60px rgba(0, 0, 0, 0.6),                /* bóng đổ xuống bàn */
+        0 6px 20px rgba(0, 0, 0, 0.45);
+    }
+    #stage { border-radius: 38px; overflow: hidden; }
+  }
 
 /* KHÔNG có thanh HTML nào phía trên board.
      Đây là game điện thoại: chọn màn nằm trong khay Cài đặt của chính game (nút
@@ -65,7 +97,7 @@ const html = `<meta charset="utf-8" />
 </style>
 
 <div id="ssj-wrap">
-  <div id="stage"></div>
+  <div id="phone"><div id="stage"></div></div>
 </div>
 
 <script type="module">
