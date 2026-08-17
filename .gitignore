@@ -1,0 +1,13 @@
+# phụ thuộc — cài lại bằng `npm ci` trong game/
+node_modules/
+
+# sản phẩm build trung gian; bản phát hành là Block-Now_playable.html ở gốc repo,
+# thứ đó CÓ theo dõi vì nó chính là file đem cho người khác chơi
+game/dist/
+game/dist-single/
+
+# rác của hệ điều hành / trình soạn thảo
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.log

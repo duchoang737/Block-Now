@@ -1,0 +1,240 @@
+{
+  "id": "lv_c1_05",
+  "name": "Level 5",
+  "chapter": 1,
+  "rows": 4,
+  "cols": 5,
+  "playable": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      2,
+      0
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      4
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      3,
+      4
+    ]
+  ],
+  "holders": [
+    {
+      "id": "k1",
+      "color": "white",
+      "cells": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "holes": [
+        "pentagon",
+        "pentagon"
+      ]
+    },
+    {
+      "id": "k2",
+      "color": "yellow",
+      "cells": [
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ]
+      ],
+      "holes": [
+        "star",
+        "heart"
+      ]
+    },
+    {
+      "id": "k3",
+      "color": "purple",
+      "cells": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "holes": [
+        "circle",
+        "diamond"
+      ]
+    }
+  ],
+  "pieces": [
+    {
+      "id": "p1",
+      "pegs": [
+        {
+          "id": "g1",
+          "cell": [
+            3,
+            1
+          ],
+          "layers": [
+            {
+              "color": "white",
+              "shape": "pentagon"
+            }
+          ]
+        },
+        {
+          "id": "g2",
+          "cell": [
+            3,
+            0
+          ],
+          "layers": [
+            {
+              "color": "white",
+              "shape": "pentagon"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pegs": [
+        {
+          "id": "g3",
+          "cell": [
+            1,
+            4
+          ],
+          "layers": [
+            {
+              "color": "yellow",
+              "shape": "star"
+            }
+          ]
+        },
+        {
+          "id": "g4",
+          "cell": [
+            2,
+            4
+          ],
+          "layers": [
+            {
+              "color": "yellow",
+              "shape": "heart"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "pegs": [
+        {
+          "id": "g5",
+          "cell": [
+            3,
+            2
+          ],
+          "layers": [
+            {
+              "color": "purple",
+              "shape": "circle"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "pegs": [
+        {
+          "id": "g6",
+          "cell": [
+            0,
+            1
+          ],
+          "layers": [
+            {
+              "color": "purple",
+              "shape": "diamond"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "timeLimitMs": 80000,
+  "difficulty": "hard",
+  "minMoves": 8
+}

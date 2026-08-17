@@ -1,0 +1,577 @@
+{
+  "level": {
+    "id": "lv_c2_19",
+    "name": "Level 19",
+    "chapter": 2,
+    "rows": 5,
+    "cols": 6,
+    "playable": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        4,
+        4
+      ],
+      [
+        4,
+        5
+      ]
+    ],
+    "holders": [
+      {
+        "id": "k1",
+        "color": "yellow",
+        "cells": [
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            4,
+            5
+          ]
+        ],
+        "holes": [
+          "heart",
+          "square",
+          "star"
+        ]
+      },
+      {
+        "id": "k2",
+        "color": "pink",
+        "cells": [
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ]
+        ],
+        "holes": [
+          "circle",
+          "star"
+        ]
+      },
+      {
+        "id": "k3",
+        "color": "purple",
+        "cells": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "holes": [
+          "diamond",
+          "star"
+        ]
+      },
+      {
+        "id": "k4",
+        "color": "blue",
+        "cells": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "holes": [
+          "circle",
+          "heart"
+        ]
+      },
+      {
+        "id": "k5",
+        "color": "green",
+        "cells": [
+          [
+            1,
+            3
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        "holes": [
+          "triangle",
+          "diamond"
+        ]
+      },
+      {
+        "id": "k6",
+        "color": "white",
+        "cells": [
+          [
+            1,
+            4
+          ],
+          [
+            1,
+            5
+          ]
+        ],
+        "holes": [
+          "pentagon",
+          "pentagon"
+        ]
+      }
+    ],
+    "pieces": [
+      {
+        "id": "p1",
+        "pegs": [
+          {
+            "id": "g1",
+            "cell": [
+              2,
+              0
+            ],
+            "layers": [
+              {
+                "color": "yellow",
+                "shape": "heart"
+              }
+            ]
+          },
+          {
+            "id": "g2",
+            "cell": [
+              2,
+              1
+            ],
+            "layers": [
+              {
+                "color": "yellow",
+                "shape": "square"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "p2",
+        "pegs": [
+          {
+            "id": "g3",
+            "cell": [
+              1,
+              2
+            ],
+            "layers": [
+              {
+                "color": "yellow",
+                "shape": "star"
+              }
+            ]
+          },
+          {
+            "id": "g4",
+            "cell": [
+              1,
+              1
+            ],
+            "layers": [
+              {
+                "color": "pink",
+                "shape": "circle"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "p3",
+        "pegs": [
+          {
+            "id": "g5",
+            "cell": [
+              4,
+              3
+            ],
+            "layers": [
+              {
+                "color": "pink",
+                "shape": "star"
+              }
+            ]
+          },
+          {
+            "id": "g6",
+            "cell": [
+              3,
+              3
+            ],
+            "layers": [
+              {
+                "color": "purple",
+                "shape": "diamond"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "p4",
+        "pegs": [
+          {
+            "id": "g7",
+            "cell": [
+              4,
+              1
+            ],
+            "layers": [
+              {
+                "color": "purple",
+                "shape": "star"
+              }
+            ]
+          },
+          {
+            "id": "g8",
+            "cell": [
+              4,
+              0
+            ],
+            "layers": [
+              {
+                "color": "blue",
+                "shape": "circle"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "p5",
+        "pegs": [
+          {
+            "id": "g9",
+            "cell": [
+              2,
+              4
+            ],
+            "layers": [
+              {
+                "color": "blue",
+                "shape": "heart"
+              }
+            ]
+          },
+          {
+            "id": "g10",
+            "cell": [
+              3,
+              4
+            ],
+            "layers": [
+              {
+                "color": "green",
+                "shape": "triangle"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "p6",
+        "pegs": [
+          {
+            "id": "g11",
+            "cell": [
+              0,
+              5
+            ],
+            "layers": [
+              {
+                "color": "green",
+                "shape": "diamond"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "p7",
+        "pegs": [
+          {
+            "id": "g12",
+            "cell": [
+              0,
+              0
+            ],
+            "layers": [
+              {
+                "color": "white",
+                "shape": "pentagon"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "p8",
+        "pegs": [
+          {
+            "id": "g13",
+            "cell": [
+              4,
+              4
+            ],
+            "layers": [
+              {
+                "color": "white",
+                "shape": "pentagon"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "timeLimitMs": 180000,
+    "difficulty": "hard",
+    "minMoves": 17
+  },
+  "solution": [
+    [
+      "p3",
+      [
+        4,
+        2
+      ]
+    ],
+    [
+      "p6",
+      [
+        0,
+        4
+      ]
+    ],
+    [
+      "p3",
+      [
+        3,
+        2
+      ]
+    ],
+    [
+      "p4",
+      [
+        3,
+        3
+      ]
+    ],
+    [
+      "p4",
+      [
+        2,
+        3
+      ]
+    ],
+    [
+      "p4",
+      [
+        4,
+        3
+      ]
+    ],
+    [
+      "p4",
+      [
+        4,
+        4
+      ]
+    ],
+    [
+      "p5",
+      [
+        3,
+        2
+      ]
+    ],
+    [
+      "p8",
+      [
+        2,
+        4
+      ]
+    ],
+    [
+      "p1",
+      [
+        3,
+        3
+      ]
+    ],
+    [
+      "p1",
+      [
+        2,
+        4
+      ]
+    ],
+    [
+      "p2",
+      [
+        2,
+        1
+      ]
+    ],
+    [
+      "p2",
+      [
+        4,
+        4
+      ]
+    ],
+    [
+      "p5",
+      [
+        1,
+        1
+      ]
+    ],
+    [
+      "p5",
+      [
+        0,
+        2
+      ]
+    ],
+    [
+      "p4",
+      [
+        1,
+        3
+      ]
+    ],
+    [
+      "p7",
+      [
+        0,
+        5
+      ]
+    ]
+  ]
+}

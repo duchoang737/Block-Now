@@ -1,0 +1,50 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Block Now! — 4 kiểu băng</title>
+<style>
+  body { margin: 0; padding: 28px; background: #221c36; color: #c9c2f5;
+         font-family: system-ui, sans-serif; }
+  h1 { font-size: 19px; margin: 0 0 6px; color: #f5f7fb; }
+  p.lead { margin: 0 0 12px; font-size: 13.5px; line-height: 1.65; max-width: 880px; }
+  p.lead b { color: #f5f7fb; }
+  .now { display: flex; align-items: center; gap: 16px; margin: 18px 0 4px;
+          background: #191527; border: 1px solid #2a2270; border-radius: 12px; padding: 14px; }
+  .now img { border-radius: 8px; }
+  .now span { font-size: 13px; line-height: 1.6; }
+  .grid { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 22px; }
+  figure { margin: 0; width: 420px; background: #191527; border: 1px solid #2a2270;
+            border-radius: 14px; padding: 14px; }
+  figcaption { display: flex; flex-direction: column; gap: 5px; margin-bottom: 11px;
+                min-height: 92px; }
+  figcaption b { color: #f5f7fb; font-size: 15px; }
+  figcaption span { font-size: 12.5px; opacity: .78; line-height: 1.55; }
+  img { display: block; width: 100%; border-radius: 8px; }
+</style>
+<h1>Băng — 4 kiểu để duyệt</h1>
+<p class="lead">Băng hiện tại chỉ là <b>một hình bo góc phẳng cộng một nét viền</b> — không có khối,
+không có chất, nên nó đọc ra ô nhựa xám nhạt chứ không ra băng. Bốn bản dưới là <b>bản vẽ mẫu</b>
+gen bằng AI, lấy chính ảnh chụp board Lv40 làm tham chiếu phong cách; duyệt xong tôi dựng lại bằng
+code trong game (băng vẽ bằng Graphics chứ không phải sprite, nên phải tả lại chứ không dán ảnh).</p>
+<div class="now">
+  <img src="ice_now.png" alt="băng hiện tại" />
+  <span><b>Đang có trong game</b> — nền xanh xám alpha .78, viền trắng 3px, hết.<br />
+  Nó nhạt hơn cả ô board trống nên mắt đọc thành “ô bị mờ”, không đọc thành “ô bị chặn”.</span>
+</div>
+<div class="grid">
+  <figure>
+    <figcaption><b>A · KHỐI ĐẶC</b><span>Băng là một khối dày nhô hẳn lên khỏi mặt board: cạnh vát bắt sáng ở trên-trái, lộ thành đứng ở dưới-phải, vệt bóng dọc thân. Cùng ngôn ngữ hình với khay và chốt — cũng là khối nhựa dày, chỉ khác chất.</span></figcaption>
+    <img src="ice_a_khoi.png" alt="A · KHỐI ĐẶC" />
+  </figure>
+  <figure>
+    <figcaption><b>B · NỨT</b><span>Xanh lơ nhạt, có vết nứt trắng chạy xuyên từng ô như kính đông sắp vỡ. Đọc ra “sắp tan” ngay cả khi chưa nhìn con số.</span></figcaption>
+    <img src="ice_b_nut.png" alt="B · NỨT" />
+  </figure>
+  <figure>
+    <figcaption><b>C · PHỦ SƯƠNG</b><span>Mờ đục như cửa kính tủ lạnh, tinh thể sương bò vào từ mép, giữa ô còn thấy mờ mờ nền board. Nhẹ nhất, ít che board nhất.</span></figcaption>
+    <img src="ice_c_suong.png" alt="C · PHỦ SƯƠNG" />
+  </figure>
+  <figure>
+    <figcaption><b>D · TINH THỂ</b><span>Ghép từ các mặt cắt góc cạnh, mỗi mặt bắt sáng một kiểu như đá quý mài. Nổi bật nhất nhưng cũng ồn nhất.</span></figcaption>
+    <img src="ice_d_tinhthe.png" alt="D · TINH THỂ" />
+  </figure>
+</div>

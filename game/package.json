@@ -1,0 +1,22 @@
+{
+  "name": "shape-sort-jam",
+  "private": true,
+  "version": "0.1.0-M0",
+  "type": "module",
+  "description": "M0 greybox prototype — Shape Sort Jam (Sort & Jam x Shape-in-Shape). See ../ShapeInShape_GDD.md",
+  "scripts": {
+    "dev": "vite --port 5188",
+    "build": "vite build",
+    "build:single": "vite build --config vite.config.single.ts && node scripts/make-artifact.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pixi.js": "^8.6.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vitest": "^3.0.5"
+  }
+}

@@ -1,0 +1,275 @@
+{
+  "id": "lv_c1_07",
+  "name": "Level 7",
+  "chapter": 1,
+  "rows": 4,
+  "cols": 5,
+  "playable": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      4
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      2,
+      0
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      4
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      3,
+      4
+    ]
+  ],
+  "holders": [
+    {
+      "id": "k1",
+      "color": "pink",
+      "cells": [
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "holes": [
+        "circle",
+        "star",
+        "circle"
+      ]
+    },
+    {
+      "id": "k2",
+      "color": "yellow",
+      "cells": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          3
+        ]
+      ],
+      "holes": [
+        "star",
+        "square",
+        "heart"
+      ]
+    },
+    {
+      "id": "k3",
+      "color": "purple",
+      "cells": [
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          2
+        ]
+      ],
+      "holes": [
+        "star",
+        "diamond"
+      ]
+    }
+  ],
+  "pieces": [
+    {
+      "id": "p1",
+      "pegs": [
+        {
+          "id": "g1",
+          "cell": [
+            3,
+            4
+          ],
+          "layers": [
+            {
+              "color": "purple",
+              "shape": "diamond"
+            },
+            {
+              "color": "purple",
+              "shape": "star"
+            }
+          ]
+        },
+        {
+          "id": "g2",
+          "cell": [
+            2,
+            4
+          ],
+          "layers": [
+            {
+              "color": "pink",
+              "shape": "circle"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pegs": [
+        {
+          "id": "g3",
+          "cell": [
+            3,
+            0
+          ],
+          "layers": [
+            {
+              "color": "pink",
+              "shape": "star"
+            }
+          ]
+        },
+        {
+          "id": "g4",
+          "cell": [
+            2,
+            0
+          ],
+          "layers": [
+            {
+              "color": "pink",
+              "shape": "circle"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "pegs": [
+        {
+          "id": "g5",
+          "cell": [
+            3,
+            1
+          ],
+          "layers": [
+            {
+              "color": "yellow",
+              "shape": "star"
+            }
+          ]
+        },
+        {
+          "id": "g6",
+          "cell": [
+            2,
+            1
+          ],
+          "layers": [
+            {
+              "color": "yellow",
+              "shape": "square"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "pegs": [
+        {
+          "id": "g7",
+          "cell": [
+            1,
+            1
+          ],
+          "layers": [
+            {
+              "color": "yellow",
+              "shape": "heart"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "timeLimitMs": 100000,
+  "difficulty": "hard",
+  "minMoves": 11
+}

@@ -1,0 +1,68 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Block Now! — 4 demo theme khối nhựa</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0; padding: 28px clamp(16px, 4vw, 48px) 64px;
+    background: #221c36; color: #b9c6da;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  h1 { color: #f5f7fb; font-size: 20px; margin: 0 0 6px; }
+  .sub { font-size: 13.5px; line-height: 1.6; max-width: 78ch; margin: 0 0 26px; }
+  .sub b { color: #f5f7fb; }
+  .grid { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(330px, 420px)); }
+  figure {
+    margin: 0; background: #2b2440; border: 1px solid #3c3557;
+    border-radius: 14px; overflow: hidden;
+  }
+  figure img { display: block; width: 100%; height: auto; background: #1a1628; }
+  figcaption { padding: 12px 15px 15px; font-size: 13px; line-height: 1.55; }
+  figcaption b { color: #f5c518; display: block; margin-bottom: 3px; font-size: 13.5px; }
+  .pick { border-color: #f5c518; }
+  .pick figcaption b::after { content: " · bản chuyển thể đúng cho game mình"; color: #b9c6da; font-weight: 400; }
+  footer { margin-top: 34px; font-size: 13px; line-height: 1.7; max-width: 78ch; }
+  footer a { color: #f5c518; }
+  code { background: #1a1628; padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+
+  /* Ảnh gốc 1024px (và ảnh chụp máy 780x1688) — không chặn trần thì trên màn
+     hình rộng chúng bị kéo giãn to đùng, nhìn vỡ và mất cảm giác cỡ thật. */
+  .grid { justify-content: start; }
+  figure img { max-height: 340px; object-fit: contain; }
+  figure { max-width: 460px; }
+</style>
+
+<h1>4 demo theme — khối nhựa lắp ghép</h1>
+<p class="sub">
+  Sinh bằng skill <code>gen-2d</code> từ mô tả style trong ảnh bạn gửi: khối nhựa bóng có
+  <b>núm studs</b>, thành đứng tối ~15% chiều cao, board <b>xám đá</b> khung bo dày, ô trống là
+  hốc lõm tối hơn, đèn phẳng từ trên-trái.
+</p>
+
+<div class="grid">
+  <figure>
+    <img src="demo1_board.png" alt="Board kín khối màu" />
+    <figcaption><b>1 · Board</b>Bám sát ảnh gốc nhất: board kín khối màu, khe thoát có số ở rìa. Khe thoát là cơ chế của game khác — mình không có.</figcaption>
+  </figure>
+
+  <figure class="pick">
+    <img src="demo2_holders.png" alt="Khay có lỗ theo hình" />
+    <figcaption><b>2 · Khay + lỗ</b>Khay là thanh nhựa có <b>lỗ lõm theo hình</b> (tròn/tim/sao/vuông), chốt hình có núm nằm chờ, một lỗ đã đầy đang sáng. Giữ nguyên cơ chế màu × hình.</figcaption>
+  </figure>
+
+  <figure>
+    <img src="demo3_pieces.png" alt="Bảng tra mảnh" />
+    <figcaption><b>3 · Bảng tra mảnh</b>1 ô, 1×2, 1×3, L, T, chữ thập × 6 màu, kèm hình cắt lộ <b>lớp lồng bên trong</b> (shape-in-shape).</figcaption>
+  </figure>
+
+  <figure>
+    <img src="demo4_screen.png" alt="Màn hình dọc" />
+    <figcaption><b>4 · Màn hình</b>Bố cục dọc đầy đủ: HUD, board có mấu, <b>băng</b> và <b>cửa cuốn</b>.</figcaption>
+  </figure>
+</div>
+
+<footer>
+  <p><b style="color:#f5f7fb">Lưu ý:</b> theme này tôi <b>đã áp vào game</b> rồi (palette xám đá + núm
+  stud + thành đứng trên chốt) — mở <code>Block-Now_playable.html</code> là thấy ngay. Nếu xem xong
+  bạn muốn khác đi, nói một câu là tôi trả về bản cũ hoặc chỉnh lại.</p>
+</footer>

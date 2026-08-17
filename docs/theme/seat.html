@@ -1,0 +1,56 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Block Now! — chốt LẮP xuống board</title>
+<style>
+  body { margin: 0; padding: 28px; background: #221c36; color: #c9c2f5;
+         font-family: system-ui, sans-serif; }
+  h1 { font-size: 19px; margin: 0 0 6px; color: #f5f7fb; }
+  p.lead { margin: 0 0 10px; font-size: 13.5px; line-height: 1.65; max-width: 860px; }
+  p.lead b { color: #f5f7fb; }
+  .grid { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 22px; }
+  figure { margin: 0; width: 400px; background: #191527; border: 1px solid #2a2270;
+            border-radius: 14px; padding: 14px; }
+  figure.pick { border-color: #f5c518; }
+  figcaption { display: flex; flex-direction: column; gap: 5px; margin-bottom: 11px;
+                min-height: 104px; }
+  figcaption b { color: #f5f7fb; font-size: 15px; }
+  figure.pick figcaption b::after { content: " · đang bật"; color: #f5c518; }
+  figcaption span { font-size: 12.5px; opacity: .78; line-height: 1.55; }
+  img { display: block; width: 100%; border-radius: 8px; background: #2a2340; }
+  code { background: #2a2340; padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+</style>
+<h1>Chốt phải LẮP xuống board, không phải dán lên board</h1>
+<p class="lead">Chỗ chê: viên chốt nhìn như <b>hình dán lơ lửng</b>. Bản cũ đổ bóng bằng
+<b>một bản sao đặc của chính hình đó</b>, lệch xuống 7% ô, alpha .25 — mép bóng sắc lẻm y hệt
+viên chốt, và nó ló ra thành vành đen ĐỀU cách chân viên hẳn một quãng. Mắt đọc cái quãng đó
+ra <b>khe hở</b> giữa viên và mặt board.</p>
+<p class="lead">Nhưng bóng chỉ nói "vật ở TRÊN nền". Thứ nói "vật này DÀY" là <b>thành đứng</b> —
+đúng thứ khung board (<code>FRAME_LIFT</code>) và khay đã dùng, riêng viên chốt thì thiếu:
+sprite chốt là tấm nhựa mỏng, thành vẽ sẵn trong ảnh chỉ ~4% chiều cao. Ba ảnh dưới render
+<b>thẳng từ game thật</b>, cùng màn 5, chỉ khác cách xử chân viên.</p>
+<div class="grid">
+  <figure>
+    <figcaption><b>A · Hiện tại</b><span>Bóng = bản sao đặc lệch xuống, mép sắc. Viên treo lơ
+    lửng; ở viên kim cương cái bóng còn đọc ra một viên thứ hai màu đen nằm dưới.</span></figcaption>
+    <img src="seat_a_now.png" alt="A · hiện tại" />
+  </figure>
+  <figure>
+    <figcaption><b>B · Bóng tiếp xúc</b><span>Bỏ bản sao, thay bằng ba lớp đồng dạng tán từ
+    đậm sát chân ra nhạt dần — bóng của vật CHẠM mặt phẳng. Hết lơ lửng, nhưng viên vẫn mỏng
+    như tấm decal.</span></figcaption>
+    <img src="seat_b_soft.png" alt="B · bóng tiếp xúc mềm" />
+  </figure>
+  <figure class="pick">
+    <figcaption><b>C · + THÀNH ĐỨNG</b><span>Đắp hai tầng tối dần dưới sprite ⇒ viên dày ra,
+    thành đứng lộ ở đáy đúng màu nhựa của nó. Thanh nối cũng được dựng lại thành khối nhựa
+    (thành + mặt + gờ bắt sáng) nên cụm chốt nối nhau đọc ra MỘT khối đúc liền.</span></figcaption>
+    <img src="seat_c_skirt.png" alt="C · thành đứng + bóng tiếp xúc" />
+  </figure>
+  <figure>
+    <figcaption><b>D · C + HỐC LÚN</b><span>Thêm rãnh quanh chân viên: tối ở trên-trái, bắt
+    sáng ở dưới-phải ⇒ mặt ô bị viên ấn lún xuống, đọc ra "cắm VÀO board". Đổi lại rãnh bám
+    quanh mọi viên, ở hình nhiều ngóc ngách như ngôi sao thì nó ra như vết bẩn.
+    Bật bằng <code>SEAT_SOCKET = true</code>.</span></figcaption>
+    <img src="seat_d_skirt_socket.png" alt="D · thành đứng + hốc lún" />
+  </figure>
+</div>
