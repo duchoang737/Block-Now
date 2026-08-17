@@ -14,7 +14,15 @@ const js = readFileSync(resolve(root, 'dist-single/bundle.js'), 'utf8')
 // Trang cố ý CHỈ có một theme: đây là một màn hình arcade nền chàm, không phải tài liệu.
 // Toàn bộ màu lấy thẳng từ palette của game (view/theme.ts) để khung trang và canvas
 // đọc như MỘT mặt phẳng duy nhất — không dựng "hero", vì hero chính là cái board.
-const html = `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+// `<meta charset>` PHẢI đứng đầu và không được thiếu.
+//
+// File này được chia sẻ bằng cách gửi thẳng cho người khác mở, tức là qua `file://`
+// — không có header `Content-Type` nào để nói bảng mã. Thiếu khai báo thì trình
+// duyệt đoán windows-1252 và MỌI chuỗi tiếng Việt trong bundle vỡ thành "CÃ i Ä'áº·t".
+// Qua dev server thì không thấy lỗi vì server tự gửi charset trong header, nên bug
+// này chỉ lộ ra ở đúng bản đem cho người chơi.
+const html = `<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Shape Sort Jam — prototype</title>
 <style>
   :root {
@@ -43,64 +51,20 @@ const html = `<meta name="viewport" content="width=device-width, initial-scale=1
     -webkit-tap-highlight-color: transparent;
   }
 
-  #bar {
-    display: grid; gap: 4px 14px; align-items: center;
-    grid-template-columns: auto 1fr auto;
-    padding: calc(10px + var(--sat)) calc(16px + var(--sar)) 11px calc(16px + var(--sal));
-    background: var(--rail); border-bottom: 1px solid #2a2270;
-  }
-  #brand { display: flex; align-items: baseline; gap: 9px; min-width: 0; }
-  #brand b { color: var(--ink); font-size: 14px; font-weight: 700; letter-spacing: .01em; }
-  #brand span {
-    font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase;
-    color: var(--accent); opacity: .85; white-space: nowrap;
-  }
-  #levelSelect {
-    grid-column: 2; justify-self: start; max-width: 100%; min-width: 0;
-    background: var(--field); color: var(--ink); border: 1px solid var(--frame);
-    border-radius: 9px; padding: 5px 9px; font: inherit; font-size: 12.5px;
-  }
-  #levelSelect:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  #status {
-    grid-column: 3; font-size: 12px; font-variant-numeric: tabular-nums;
-    color: var(--muted); opacity: .85; white-space: nowrap;
-  }
-  #rule {
-    grid-column: 1 / -1; font-size: 12px; line-height: 1.5; opacity: .72;
-    display: flex; flex-wrap: wrap; align-items: center; gap: 5px 8px;
-  }
-  /* gói cả câu thành MỘT flex item, nếu không thì gap sẽ giãn từng chữ ra */
-  #rule .sentence { flex: 0 1 auto; }
-  #rule b { color: var(--ink); font-weight: 600; opacity: .95; }
-  #rule i {
-    font-style: normal; font-size: 10.5px; padding: 2px 7px; border-radius: 999px;
-    background: #2a2270; color: var(--muted); white-space: nowrap;
-  }
-
   #stage {
     flex: 1; width: 100%; min-width: 0; min-height: 0; position: relative;
     touch-action: none;   /* mọi cử chỉ trên board là của game, không phải trình duyệt */
   }
   #stage canvas { display: block; }
 
-  /* Điện thoại: giấu dòng luật để board ăn trọn chiều cao.
-     PHẢI đặt CUỐI stylesheet — cùng specificity (#rule) nên thứ tự nguồn quyết định;
-     nếu để trên, khai báo display:flex phía dưới sẽ đè mất display:none. */
-  @media (max-width: 560px) {
-    #bar { padding-bottom: 9px; }
-    #rule { display: none; }
-    #brand b { font-size: 13px; }
-    #levelSelect { font-size: 12px; padding: 7px 9px; }
-  }
+/* KHÔNG có thanh HTML nào phía trên board.
+     Đây là game điện thoại: chọn màn nằm trong khay Cài đặt của chính game (nút
+     bánh răng), nên trang chỉ còn đúng canvas ăn trọn màn hình. Thanh cũ vừa ăn
+     mất chiều cao board, vừa lộ ra là "trang web có nhúng game" chứ không phải
+     một cái game. */
 </style>
 
 <div id="ssj-wrap">
-  <div id="bar">
-    <span id="brand"><b>Shape Sort Jam</b> <span>prototype M0</span></span>
-    <select id="levelSelect"></select>
-    <span id="status"></span>
-    <span id="rule"><span class="sentence">Nhấc <b>mảnh chốt</b> thả xuống <b>ô trống kề khay</b> — chốt nhảy vào lỗ nếu khớp cả <b>màu × hình</b>.</span><i>khay là khối đặc</i><i>chốt nối nhau đi cùng nhau</i><i>khay đầy lỗ thì nổ</i><i>không có Undo</i></span>
-  </div>
   <div id="stage"></div>
 </div>
 

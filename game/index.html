@@ -15,7 +15,7 @@
       }
       * { box-sizing: border-box; }
       html, body {
-        margin: 0; width: 100%; overflow: hidden; background: #241d63;
+        margin: 0; width: 100%; overflow: hidden; background: #2b2440;
         font-family: system-ui, sans-serif;
         height: 100vh; height: 100dvh;      /* dvh: trừ đúng thanh URL trên mobile */
         overscroll-behavior: none;          /* chặn kéo-để-tải-lại */
@@ -27,26 +27,11 @@
         user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
         touch-action: manipulation;         /* bỏ delay 300ms + zoom double-tap */
       }
-      #bar {
-        display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap;
-        padding: calc(10px + var(--sat)) calc(14px + var(--sar)) 10px calc(14px + var(--sal));
-        background: #1c1650; color: #c9c2f5; font-size: 14px; max-width: 100%;
-      }
-      /* điện thoại: thanh trên rút gọn để nhường trọn chiều cao cho board */
-      @media (max-width: 560px) {
-        #bar { font-size: 12px; padding-bottom: 8px; }
-        #hint { display: none; }
-        #bar select { font-size: 12px; padding: 8px 10px; }
-      }
-      #bar select {
-        background: #3a2f94; color: #f5f5ff; border: 1px solid #6a5ce0;
-        border-radius: 8px; padding: 6px 10px; font-size: 14px;
-        max-width: 100%; min-width: 0;
-      }
-      /* hint xuống dòng riêng — nếu để cùng hàng nó ép trang rộng hơn viewport
-         và board bị cắt mất cột bên phải */
-      #hint { flex: 1 1 100%; min-width: 0; order: 2; opacity: 0.75; line-height: 1.4; }
-      #status { margin-left: auto; min-width: 0; font-variant-numeric: tabular-nums; opacity: 0.9; }
+      /* KHÔNG có thanh HTML nào phía trên board.
+         Chọn màn nằm trong khay Cài đặt của chính game (nút bánh răng), nên trang
+         chỉ còn đúng một thứ: canvas ăn trọn màn hình. Đây là game điện thoại —
+         mọi pixel dành cho board, và không có mảnh giao diện nào của trình duyệt
+         lọt vào ảnh chụp màn hình hay bản đóng gói APK. */
       #stage {
         flex: 1; width: 100%; min-width: 0; min-height: 0; position: relative;
         touch-action: none;   /* mọi cử chỉ trên board là của game, không phải của trình duyệt */
@@ -55,11 +40,6 @@
     </style>
   </head>
   <body>
-    <div id="bar">
-      <select id="levelSelect"></select>
-      <span id="hint">Nhấc <b>mảnh chốt</b> lên, thả xuống <b>ô trống KỀ khay</b> → chốt <b>nhảy vào lỗ</b> nếu khớp cả <b>màu × hình</b> · khay là khối đặc, không thả đè lên được · chốt nối nhau di chuyển cùng nhau · khay đầy lỗ sẽ nổ và trả lại ô trống · <b>không có Undo</b></span>
-      <span id="status"></span>
-    </div>
     <div id="stage"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

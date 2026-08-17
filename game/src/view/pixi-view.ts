@@ -115,6 +115,10 @@ const SEAT_SOCKET = false;
 /** Đắp thêm thành đứng dưới sprite chốt cho viên DÀY ra — xem `drawSeatSkirt`. */
 const SEAT_SKIRT = true;
 
+/** Lưới bộ chọn màn: 5×5 một trang ⇒ 50 màn gọn trong hai trang. */
+const LEVEL_COLS = 5;
+const LEVEL_ROWS = 5;
+
 const WIN_HOLD = 2000;
 /** …nhưng luôn phải chờ animation cuối chạy xong đã. */
 const WIN_HOLD_AFTER_FX = 500;
@@ -135,7 +139,10 @@ interface Button {
   x: number; y: number; w: number; h: number;
   action:
     | 'restart' | 'next' | 'addTime' | 'retry'
-    | 'settings' | 'closeSettings' | 'toggleVibrate' | 'edit' | 'none';
+    | 'settings' | 'closeSettings' | 'toggleVibrate' | 'edit' | 'none'
+    | 'levels' | 'closeLevels' | 'pickLevel' | 'levelPage';
+  /** với `pickLevel` là chỉ số màn; với `levelPage` là ±1 */
+  idx?: number;
 }
 
 export interface GameHandle {
@@ -152,6 +159,16 @@ export interface GameOptions {
   onLevelRequest?: (dir: 1) => Level | undefined;
   /** Gọi khi thoát trình sửa màn, kèm bản đã sửa. */
   onLevelEdit?: (level: Level) => void;
+  /**
+   * TOÀN BỘ danh mục màn — bộ chọn màn nằm TRONG game (khay Cài đặt), không phải
+   * thẻ `<select>` của trang. Trang chỉ còn canvas, nên trên điện thoại board ăn
+   * trọn màn hình và bản đóng gói không lộ mảnh giao diện trình duyệt nào.
+   */
+  catalog?: Level[];
+  /** id những màn đang dùng bản sửa tay — đánh dấu ✎ trong bộ chọn. */
+  edited?: Set<string>;
+  /** Gọi mỗi lần đổi màn, để bên ngoài nhớ chỗ đang chơi dở. */
+  onLevelChange?: (level: Level) => void;
 }
 
 const fmtTime = (ms: number): string => {
@@ -195,10 +212,12 @@ export async function createGame(
   const hud = new Container();
   const overlay = new Container();
   const settings = new Container();
+  const levels = new Container();
   const editor = new Container();
   app.stage.addChild(
     gBoard, gObstacle, obstacleLabels, gHolders, holderSprites, gGhost, gPieces, pieceSprites,
     gShutter, shutterLabels, gDrag, dragSprites, gFx, fxSprites, hud, editor, overlay, settings,
+    levels,
   );
 
   await loadPegTextures();
@@ -295,10 +314,29 @@ export async function createGame(
 
   const gSettings = new Graphics();
   const setTitle = new Text({ text: 'Cài đặt', style: { fontFamily: hudFont, fontSize: 30, fill: THEME.white, fontWeight: '900' } });
-  const setRows = [0, 1, 2, 3].map(
+  const setRows = [0, 1, 2, 3, 4].map(
     () => new Text({ text: '', style: { fontFamily: font, fontSize: 21, fill: THEME.white, fontWeight: '700' } }),
   );
   settings.addChild(gSettings, setTitle, ...setRows);
+
+  /**
+   * BỘ CHỌN MÀN — lưới số, chia trang.
+   *
+   * Chia trang chứ không cuộn: cuộn trong canvas phải tự dựng quán tính, tự phân
+   * biệt "vuốt để cuộn" với "chạm để chọn", và trên điện thoại hai thứ đó rất dễ
+   * đá nhau. Lưới 5×5 một trang thì 50 màn gọn trong hai trang, chạm phát trúng
+   * ngay, và ô chạm 60px vượt ngưỡng 44px của mobile.
+   */
+  const gLevels = new Graphics();
+  const lvTitle = new Text({ text: 'Chọn màn', style: { fontFamily: hudFont, fontSize: 30, fill: THEME.white, fontWeight: '900' } });
+  const lvCells = Array.from(
+    { length: LEVEL_COLS * LEVEL_ROWS },
+    () => new Text({ text: '', style: { fontFamily: hudFont, fontSize: 22, fill: THEME.white, fontWeight: '900' } }),
+  );
+  const lvFoot = [0, 1, 2].map(
+    () => new Text({ text: '', style: { fontFamily: font, fontSize: 19, fill: THEME.white, fontWeight: '700' } }),
+  );
+  levels.addChild(gLevels, lvTitle, ...lvCells, ...lvFoot);
 
   let session = new Session(level);
   let obstacleTexts: Text[] = [];
@@ -354,6 +392,10 @@ export async function createGame(
   let editDrag: { t: ed.MoveTarget; grab: Cell; d: Cell; ok: boolean } | null = null;
 
   let settingsOpen = false;
+  let levelsOpen = false;
+  let levelPage = 0;
+  const catalog = options.catalog ?? [level];
+  const edited = options.edited ?? new Set<string>();
   /** Bật/tắt rung — nhớ qua các phiên. WebView có thể chặn localStorage nên phải bọc. */
   let vibrate = true;
   try {
@@ -422,6 +464,7 @@ export async function createGame(
     rebuildObstacleTexts();
     session.begin(now());
     if (document.hidden) session.pause(now());
+    options.onLevelChange?.(next);
   }
 
   /** Safe-area của máy (tai thỏ, thanh home). CSS đặt sẵn --sat/--sar/--sab/--sal. */
@@ -1126,7 +1169,7 @@ export async function createGame(
 
     const pw = Math.min(W - 48 * uiScale, 340 * uiScale);
     const rowH = Math.round(52 * uiScale);
-    const ph = Math.round(46 * uiScale) + rowH * 4 + Math.round(20 * uiScale);
+    const ph = Math.round(46 * uiScale) + rowH * 5 + Math.round(20 * uiScale);
     const pxs = Math.round(W / 2 - pw / 2);
     const pys = Math.round(H / 2 - ph / 2);
     gSettings.roundRect(pxs, pys + 6, pw, ph, 22 * uiScale).fill({ color: HUD.shadow, alpha: 0.4 });
@@ -1138,6 +1181,7 @@ export async function createGame(
     setTitle.y = pys + Math.round(30 * uiScale);
 
     const rows: { text: string; action: Button['action'] }[] = [
+      { text: `☰  Chọn màn  ·  đang ở ${levelNo(session.level.id)}`, action: 'levels' },
       { text: `Rung phản hồi:  ${vibrate ? 'Bật' : 'Tắt'}`, action: 'toggleVibrate' },
       { text: '✎  Sửa màn này', action: 'edit' },
       { text: 'Chơi lại màn', action: 'restart' },
@@ -1163,6 +1207,110 @@ export async function createGame(
     // thân khay nuốt cú chạm để khỏi đóng nhầm, ngoài khay mới là đóng.
     buttons.push({ x: pxs, y: pys, w: pw, h: ph, action: 'none' });
     buttons.push({ x: 0, y: 0, w: W, h: H, action: 'closeSettings' });
+  }
+
+  /** Số thứ tự màn để hiện cho người chơi — `lv_c3_25` ⇒ `25`. */
+  function levelNo(id: string): string {
+    const i = catalog.findIndex((l) => l.id === id);
+    return i >= 0 ? String(i + 1) : '?';
+  }
+
+  /**
+   * BẢNG CHỌN MÀN. Mở từ khay Cài đặt, phủ kín màn hình.
+   *
+   * Ô chạm cố tình to: cạnh ô ≥ 52px thật (không phải px thiết kế) để vượt ngưỡng
+   * 44px của mobile, vì đây là thứ người chơi bấm bằng ngón cái trên điện thoại.
+   * Màn ĐANG CHƠI tô sáng, màn có bản sửa tay gắn dấu ✎.
+   */
+  function drawLevels(): void {
+    levels.visible = levelsOpen;
+    gLevels.clear();
+    for (const t of lvCells) t.visible = false;
+    for (const t of lvFoot) t.visible = false;
+    if (!levelsOpen) return;
+
+    buttons = [];
+    const W = app.screen.width;
+    const H = app.screen.height;
+    gLevels.rect(0, 0, W, H).fill({ color: 0x120e3a, alpha: 0.88 });
+
+    const per = LEVEL_COLS * LEVEL_ROWS;
+    const pages = Math.max(1, Math.ceil(catalog.length / per));
+    levelPage = Math.max(0, Math.min(pages - 1, levelPage));
+
+    const gap = Math.round(8 * uiScale);
+    const pad = Math.round(18 * uiScale);
+    const pw = Math.min(W - 32 * uiScale, 360 * uiScale);
+    const cell = Math.floor((pw - pad * 2 - gap * (LEVEL_COLS - 1)) / LEVEL_COLS);
+    const gridH = cell * LEVEL_ROWS + gap * (LEVEL_ROWS - 1);
+    const headH = Math.round(52 * uiScale);
+    const footH = Math.round(56 * uiScale);
+    const ph = headH + gridH + footH + pad;
+    const pxs = Math.round(W / 2 - pw / 2);
+    const pys = Math.round(H / 2 - ph / 2);
+
+    gLevels.roundRect(pxs, pys + 6, pw, ph, 22 * uiScale).fill({ color: HUD.shadow, alpha: 0.4 });
+    gLevels.roundRect(pxs, pys, pw, ph, 22 * uiScale).fill(HUD.sheet);
+
+    lvTitle.text = pages > 1 ? `Chọn màn  ·  trang ${levelPage + 1}/${pages}` : 'Chọn màn';
+    lvTitle.style.fontSize = Math.round(24 * uiScale);
+    lvTitle.anchor.set(0.5);
+    lvTitle.x = W / 2;
+    lvTitle.y = pys + Math.round(28 * uiScale);
+
+    const gx = pxs + pad;
+    const gy = pys + headH;
+    for (let i = 0; i < per; i++) {
+      const n = levelPage * per + i;
+      if (n >= catalog.length) break;
+      const lv = catalog[n];
+      const cx = gx + (i % LEVEL_COLS) * (cell + gap);
+      const cy = gy + Math.floor(i / LEVEL_COLS) * (cell + gap);
+      const here = lv.id === session.level.id;
+
+      gLevels.roundRect(cx, cy + Math.round(3 * uiScale), cell, cell, 12 * uiScale)
+        .fill({ color: HUD.shadow, alpha: 0.35 });
+      gLevels.roundRect(cx, cy, cell, cell, 12 * uiScale).fill(here ? HUD.btnBody : HUD.btnFace);
+      if (here)
+        gLevels.roundRect(cx, cy, cell, cell, 12 * uiScale)
+          .stroke({ width: Math.max(2, 2.5 * uiScale), color: THEME.timerWarn });
+
+      const t = lvCells[i];
+      t.visible = true;
+      t.text = (edited.has(lv.id) ? '✎' : '') + String(n + 1);
+      t.style.fontSize = Math.round(cell * 0.42);
+      t.anchor.set(0.5);
+      t.x = cx + cell / 2;
+      t.y = cy + cell / 2;
+
+      buttons.push({ x: cx, y: cy, w: cell, h: cell, action: 'pickLevel', idx: n });
+    }
+
+    // chân bảng: lùi trang · đóng · sang trang
+    const fy = gy + gridH + Math.round(12 * uiScale);
+    const fh = Math.round(40 * uiScale);
+    const fw = Math.round((pw - pad * 2 - gap * 2) / 3);
+    const foot: { text: string; action: Button['action']; idx?: number; on: boolean }[] = [
+      { text: '‹', action: 'levelPage', idx: -1, on: levelPage > 0 },
+      { text: 'Đóng', action: 'closeLevels', on: true },
+      { text: '›', action: 'levelPage', idx: 1, on: levelPage < pages - 1 },
+    ];
+    foot.forEach((f, i) => {
+      const fx2 = gx + i * (fw + gap);
+      gLevels.roundRect(fx2, fy, fw, fh, fh / 2)
+        .fill({ color: i === 1 ? HUD.btnBody : HUD.btnFace, alpha: f.on ? 1 : 0.35 });
+      const t = lvFoot[i];
+      t.visible = true;
+      t.text = f.text;
+      t.style.fontSize = Math.round(18 * uiScale);
+      t.anchor.set(0.5);
+      t.x = fx2 + fw / 2;
+      t.y = fy + fh / 2;
+      if (f.on) buttons.push({ x: fx2, y: fy, w: fw, h: fh, action: f.action, idx: f.idx });
+    });
+
+    buttons.push({ x: pxs, y: pys, w: pw, h: ph, action: 'none' });
+    buttons.push({ x: 0, y: 0, w: W, h: H, action: 'closeLevels' });
   }
 
   // ---------- trình sửa màn ----------
@@ -1415,6 +1563,23 @@ export async function createGame(
       }
       if (btn.action === 'settings') settingsOpen = true;
       if (btn.action === 'closeSettings') settingsOpen = false;
+      if (btn.action === 'levels') {
+        settingsOpen = false;
+        levelsOpen = true;
+        // mo dung trang chua man dang choi
+        const i = catalog.findIndex((l) => l.id === session.level.id);
+        levelPage = i >= 0 ? Math.floor(i / (LEVEL_COLS * LEVEL_ROWS)) : 0;
+      }
+      if (btn.action === 'closeLevels') levelsOpen = false;
+      if (btn.action === 'levelPage') levelPage += btn.idx ?? 0;
+      if (btn.action === 'pickLevel') {
+        const lv = catalog[btn.idx ?? -1];
+        if (lv) {
+          levelsOpen = false;
+          settingsOpen = false;
+          loadLevel(lv);
+        }
+      }
       if (btn.action === 'edit') startEditing();
       if (btn.action === 'toggleVibrate') {
         vibrate = !vibrate;
@@ -1459,7 +1624,7 @@ export async function createGame(
       return;
     }
 
-    if (settingsOpen || session.status !== 'playing') return;
+    if (settingsOpen || levelsOpen || session.status !== 'playing') return;
 
     const { rf, cf } = toGrid(ev);
     const r = Math.floor(rf);
@@ -1647,6 +1812,7 @@ export async function createGame(
     drawHud();
     drawOverlay();
     drawSettings();
+    drawLevels();
     drawEditor();
   };
   app.ticker.add(tick);
