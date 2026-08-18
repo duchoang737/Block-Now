@@ -1748,6 +1748,21 @@ export async function createGame(
       drag.moved = true;
       drag.check = checkDrop(session.state, piece, drag.snap);
     }
+
+    // CẮM NGAY GIỮA LÚC KÉO — không đợi thả tay.
+    //
+    // Hễ mảnh trượt tới chỗ cắm được là chốt nhảy vào lỗ luôn, ngón tay chưa cần
+    // nhấc lên. Cùng với nam châm ở trên, người chơi chỉ việc kéo mảnh lại gần
+    // khay chứ không phải canh đúng ô rồi thả.
+    //
+    // Chốt xong là KẾT THÚC cú kéo (`drag = null`): cắm rồi thì `unlink` có thể
+    // xé mảnh thành mấy mảnh con, mà cái đang nằm dưới ngón tay lúc đó là mảnh
+    // nào thì không còn xác định được nữa — kéo tiếp là kéo nhầm.
+    if (drag.check.ok && drag.check.seats.length > 0) {
+      const { id, snap } = drag;
+      drag = null;
+      commitMove(id, snap);
+    }
   }
 
   function onPointerUp(): void {
@@ -1772,8 +1787,17 @@ export async function createGame(
 
     // chạm rồi nhả tại chỗ = không làm gì (bản gốc không có highlight gợi ý)
     if (!d.moved || !d.check.ok) return;
+    commitMove(d.id, d.snap);
+  }
 
-    const result = session.move(d.id, d.snap, now());
+  /**
+   * Chốt lại một nước đi: gọi engine, rồi dựng animation chốt bay vào lỗ và khay nổ.
+   *
+   * Tách ra khỏi `onPointerUp` vì giờ có HAI đường dẫn tới đây — thả tay, và cắm
+   * ngay giữa lúc kéo (xem cuối `onPointerMove`).
+   */
+  function commitMove(pieceId: string, snap: Cell): void {
+    const result = session.move(pieceId, snap, now());
     if (!result) return;
 
     if (result.poppedHolders.length > 0) buzz([0, 18, 45, 30]);
