@@ -1,10 +1,1 @@
-Lv31 ✓ 13 nước (chặn trên) · 15 nước đầu · tham thua ⇒ phải tính · 14 ô trống · 10/10 lần đặt lọt · DẠY BĂNG — mảnh xanh lá bị nhốt, nổ một khay bất kỳ là băng vỡ và lấy được nó
-Lv32 ✓ 8 nước (chặn trên) · 15 nước đầu · tham thua ⇒ phải tính · 15 ô trống · 10/10 lần đặt lọt · HAI NHỊP — mảnh xanh lá bị nhốt sau HAI lần nổ, mà chỉ bốn khay kia là mở được ngay
-Lv33 ✓ 10 nước (chặn trên) · 13 nước đầu · tham thua ⇒ phải tính · 15 ô trống · 1/1 lần đặt lọt · HAI TẢNG LỆCH NHỊP — tảng trên vỡ sau một lần nổ, tảng dưới sau ba, mỗi tảng nhốt một mảnh
-Lv34 ✓ 9 nước (chặn trên) · 17 nước đầu · tham thua ⇒ phải tính · 16 ô trống · 2/3 lần đặt lọt · CẢ HÀNG ĐÓNG BĂNG — tảng bốn ô nhốt TRỌN hai mảnh của hai khay đáy, ba lần nổ mới lấy ra được
-Lv35 ✓ 16 nước (chặn trên) · 5 nước đầu · tham thua ⇒ phải tính · 10 ô trống · 2/2 lần đặt lọt · BĂNG Ở EO — đồng hồ cát thắt lại, và chính cái eo đang đóng băng một mảnh
-Lv36 ✓ 15 nước (chặn trên) · 38 nước đầu · tham thua ⇒ phải tính · 14 ô trống · 2/2 lần đặt lọt · BĂNG NHỐT CHỐT HAI LỚP — hai chốt cam/xanh bị đóng băng, mà chúng phải cắm ở CẢ đỉnh lẫn đáy
-Lv37 ✓ 11 nước (chặn trên) · 22 nước đầu · tham thua ⇒ phải tính · 12 ô trống · 11/11 lần đặt lọt · BĂNG + KHAY ĐA HÌNH — mảnh bị nhốt là mảnh đa-loại, cắm một đầu là đứt ra
-Lv38 ✓ 10 nước (chặn trên) · 7 nước đầu · tham thua ⇒ phải tính · 12 ô trống · 2/3 lần đặt lọt · BA TẢNG BA NHỊP — mỗi tảng nhốt một mảnh, vỡ sau một, hai và bốn lần nổ
-Lv39 ✓ 14 nước (chặn trên) · 8 nước đầu · tham thua ⇒ phải tính · 11 ô trống · 1/1 lần đặt lọt · BOARD CHẬT + BĂNG — tảng băng vừa nhốt mảnh tím vừa ăn mất chỗ xoay xở vốn đã ít
-Lv40 ✓ 19 nước (chặn trên) · 13 nước đầu · tham thua ⇒ phải tính · 12 ô trống · 20/60 lần đặt lọt · SIÊU KHÓ — ba tảng ba nhịp nhốt ba mảnh, trong đó có chốt hai lớp; chín khay, board thắt ba lần
+Lv39 ✓ 13 nước (chặn trên) · 8 nước đầu · tham thua ⇒ phải tính · 12 ô trống · 1/1 lần đặt lọt · BOARD CHẬT + BĂNG — tảng băng vừa nhốt mảnh tím vừa ăn mất chỗ xoay xở vốn đã ít

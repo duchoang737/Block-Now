@@ -669,7 +669,23 @@ function tally(spec: TightSpec): string | null {
     for (const stack of t.stacks)
       for (const [c, s] of stack) bag.set(`${c}/${s}`, (bag.get(`${c}/${s}`) ?? 0) - 1);
   const bad = [...bag.entries()].filter(([, v]) => v !== 0);
-  return bad.length ? bad.map(([kk, v]) => `${kk} lệch ${v}`).join(', ') : null;
+  if (bad.length) return bad.map(([kk, v]) => `${kk} lệch ${v}`).join(', ');
+
+  /**
+   * Ô BĂNG phải KHỚP ĐÚNG số ô của mảnh bị nhốt.
+   *
+   * Băng ở game này không phải bức tường mà là thứ ĐÓNG BĂNG một khối. Tảng băng to
+   * hơn khối nó nhốt thì phần thừa ra là ô băng rỗng — đọc ra "tường" chứ không đọc
+   * ra "đóng băng", và chủ dự án nhận ra ngay ở Lv33: "cái xanh chỉ có 2 ô mà băng
+   * tới 3 ô". Sáu trên mười màn dính đúng lỗi này vì tôi đặt cỡ tảng băng trước rồi
+   * mới nhét mảnh vào sau.
+   */
+  const ice = (spec.obstacles ?? [])
+    .filter((o) => o.kind === 'ice')
+    .reduce((n, o) => n + o.cells.length, 0);
+  const frozen = spec.tmpls.filter((t) => t.onIce).reduce((n, t) => n + t.cells.length, 0);
+  if (ice !== frozen) return `băng ${ice} ô nhưng mảnh bị nhốt chỉ ${frozen} ô`;
+  return null;
 }
 
 interface Checked {
@@ -1052,7 +1068,7 @@ const TIGHT: TightSpec[] = [
   {
     id: 'lv_c3_31', n: 31, rows: 7, cols: 5, carved: [],
     idea: 'DẠY BĂNG — mảnh xanh lá bị nhốt, nổ một khay bất kỳ là băng vỡ và lấy được nó',
-    obstacles: [{ kind: 'ice' as const, cells: [[3, 1], [3, 2], [3, 3]], count: 1 }],
+    obstacles: [{ kind: 'ice' as const, cells: [[3, 1], [3, 2]], count: 1 }],
     holders: [
       holder('k1', 'red', [[0, 0], [0, 1]], ['heart', 'heart']),
       holder('k2', 'blue', [[0, 3], [0, 4]], ['circle', 'circle']),
@@ -1069,7 +1085,7 @@ const TIGHT: TightSpec[] = [
   {
     id: 'lv_c3_32', n: 32, rows: 8, cols: 5, carved: [],
     idea: 'HAI NHỊP — mảnh xanh lá bị nhốt sau HAI lần nổ, mà chỉ bốn khay kia là mở được ngay',
-    obstacles: [{ kind: 'ice' as const, cells: [[4, 1], [4, 2], [4, 3]], count: 2 }],
+    obstacles: [{ kind: 'ice' as const, cells: [[4, 1], [4, 2]], count: 2 }],
     holders: [
       holder('k1', 'red', [[0, 0], [0, 1]], ['heart', 'heart']),
       holder('k2', 'blue', [[0, 3], [0, 4]], ['circle', 'circle']),
@@ -1088,7 +1104,7 @@ const TIGHT: TightSpec[] = [
   {
     id: 'lv_c4_ice', n: 33, rows: 8, cols: 5, carved: [],
     idea: 'HAI TẢNG LỆCH NHỊP — tảng trên vỡ sau một lần nổ, tảng dưới sau ba, mỗi tảng nhốt một mảnh',
-    obstacles: [{ kind: 'ice' as const, cells: [[1, 2], [1, 3]], count: 1 }, { kind: 'ice' as const, cells: [[5, 1], [5, 2], [5, 3]], count: 3 }],
+    obstacles: [{ kind: 'ice' as const, cells: [[1, 2], [1, 3]], count: 1 }, { kind: 'ice' as const, cells: [[5, 1], [5, 2]], count: 3 }],
     holders: [
       holder('k1', 'red', [[0, 0], [0, 1]], ['heart', 'heart']),
       holder('k2', 'blue', [[0, 3], [0, 4]], ['circle', 'circle']),
@@ -1130,7 +1146,7 @@ const TIGHT: TightSpec[] = [
     id: 'lv_c4_35', n: 35, rows: 8, cols: 6,
     carved: [[3, 0], [3, 5], [4, 0], [4, 5]],
     idea: 'BĂNG Ở EO — đồng hồ cát thắt lại, và chính cái eo đang đóng băng một mảnh',
-    obstacles: [{ kind: 'ice' as const, cells: [[3, 2], [3, 3], [4, 2], [4, 3]], count: 2 }],
+    obstacles: [{ kind: 'ice' as const, cells: [[3, 2], [3, 3]], count: 2 }],
     holders: [
       holder('k1', 'red', [[0, 0], [0, 1]], ['heart', 'heart']),
       holder('k2', 'blue', [[0, 4], [0, 5]], ['circle', 'circle']),
@@ -1176,7 +1192,7 @@ const TIGHT: TightSpec[] = [
     id: 'lv_c4_37', n: 37, rows: 9, cols: 5,
     carved: [[0, 0], [0, 4], [8, 0], [8, 4]],
     idea: 'BĂNG + KHAY ĐA HÌNH — mảnh bị nhốt là mảnh đa-loại, cắm một đầu là đứt ra',
-    obstacles: [{ kind: 'ice' as const, cells: [[4, 1], [4, 2], [4, 3]], count: 2 }],
+    obstacles: [{ kind: 'ice' as const, cells: [[4, 1], [4, 2]], count: 2 }],
     holders: [
       holder('k1', 'blue', [[0, 1], [0, 2], [0, 3]], ['circle', 'heart', 'star']),
       holder('k2', 'purple', [[2, 0], [2, 1]], ['cross', 'diamond']),
@@ -1222,9 +1238,12 @@ const TIGHT: TightSpec[] = [
   {
     id: 'lv_c4_39', n: 39, rows: 8, cols: 5, carved: [],
     idea: 'BOARD CHẬT + BĂNG — tảng băng vừa nhốt mảnh tím vừa ăn mất chỗ xoay xở vốn đã ít',
-    // Băng ở HÀNG 5, không phải hàng 4: hàng 4 là khay tím và khay xanh, mà băng đè
-    // lên khay thì §8.2 chặn — 4000 lần rải ra ĐÚNG 0 chỗ đặt lọt.
-    obstacles: [{ kind: 'ice' as const, cells: [[5, 1], [5, 2], [5, 3]], count: 2 }],
+    // Băng ở HÀNG 6. Hai lần trước đều ra 0 chỗ đặt lọt, hai lý do khác nhau:
+    //   · hàng 4 — băng đè lên khay tím/xanh, §8.2 chặn thẳng.
+    //   · hàng 5 — không đè khay, nhưng tảng thu còn đúng 2 ô nên chỉ còn MỘT chỗ
+    //     đặt duy nhất, mà chỗ đó kề khay tím ⇒ mảnh tím cắm được ngay từ đầu.
+    // Hàng 6 kề khay trắng, mảnh bị nhốt là tím nên không khớp — đặt được.
+    obstacles: [{ kind: 'ice' as const, cells: [[6, 1], [6, 2]], count: 2 }],
     holders: [
       holder('k1', 'green', [[0, 0], [0, 1], [0, 2]], ['diamond', 'diamond', 'diamond']),
       holder('k2', 'red', [[2, 0], [2, 1]], ['heart', 'heart']),

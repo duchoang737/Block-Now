@@ -1,0 +1,90 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Block Now! — bộ A, dựng lại tiếng khay nổ</title>
+<style>
+  body { margin:0; padding:28px; background:#221c36; color:#c9c2f5;
+         font-family:system-ui,sans-serif; }
+  h1 { font-size:19px; margin:0 0 6px; color:#f5f7fb; }
+  h2 { font-size:15px; margin:26px 0 3px; color:#f5f7fb; }
+  h2 span { font-weight:400; font-size:12.5px; opacity:.7; margin-left:8px; }
+  p.lead { margin:0 0 8px; font-size:13.5px; line-height:1.65; max-width:900px; }
+  p.lead b { color:#f5f7fb; }
+  .cc { display:inline-block; font-size:10px; letter-spacing:.04em; padding:2px 7px;
+        border-radius:20px; background:#1d5a3a; color:#b6f0cf; }
+  .row { display:flex; flex-wrap:wrap; gap:9px; margin-top:9px; }
+  button { font:inherit; cursor:pointer; border:none; border-radius:9px;
+           background:#2a2160; color:#d9d3ff; padding:11px 14px; font-size:13px;
+           text-align:left; }
+  button:hover { background:#3b2e86; }
+  button b { display:block; font-size:11px; opacity:.6; font-weight:500; margin-top:2px; }
+  .hot { background:#6647f5; color:#fff; }
+  .hot:hover { background:#7d63ef; }
+  .hot b { opacity:.8; }
+</style>
+<h1>Bộ A · domino — dựng lại tiếng khay nổ</h1>
+<p class="lead">Đã bỏ vai <b>Thả sai</b>: game dùng cơ chế nam châm, mảnh chỉ bám được vào ô hợp lệ
+nên <b>không tồn tại cú thả hụt</b>. Tôi thêm vai đó theo thói quen làm game khác — sai.</p>
+<p class="lead">Tiếng khay nổ cũ là file <code>5points</code> — một tiếng thưởng có cao độ, nên nó
+đọc ra "được điểm" chứ không ra "khay bung ra". Dựng lại theo cách đã dùng cho bộ B: <b>xâu chuỗi
+nhiều quân domino</b> của chính bộ này, lệch nhau vài chục mili-giây. Vẫn <span class="cc">CC0</span>,
+vẫn một nguồn duy nhất.</p>
+
+<h2>Khay nổ — bản dựng bằng xâu chuỗi<span>đây là thứ cần chọn</span></h2>
+<div class="row" id="ra"></div>
+
+<h2>Khay nổ — file đơn có sẵn trong bộ<span>để đối chiếu</span></h2>
+<div class="row" id="don"></div>
+
+<h2>Ba vai còn lại<span>đã chốt, không đổi</span></h2>
+<div class="row" id="vai"></div>
+
+<script>
+const cache = {};
+function one(k, ext){
+  const a = cache[k] || (cache[k] = new Audio('sfx/'+k+'.'+(ext||'mp3')));
+  const n = a.cloneNode();          // nhân bản để nhiều tiếng chồng lên nhau được
+  n.currentTime = 0; n.play();
+}
+function seq(list){ for (const [k, ms] of list) setTimeout(() => one(k), ms); }
+
+const RA = {
+  thua: [['a_p1',0],['a_p2',80],['a_p3',170]],
+  vua:  [['a_p1',0],['a_p2',60],['a_p1',120],['a_p3',190],['a_p2',270]],
+  day:  [['a_p1',0],['a_p2',45],['a_p1',90],['a_p3',140],['a_p2',195],
+         ['a_p1',255],['a_p3',320],['a_p2',395]],
+  domino: [['a_p4',0],['a_p1',90],['a_p2',170],['a_p1',250]],
+};
+const RA_LABEL = {
+  thua:['Rã · thưa','3 quân · 170ms'], vua:['Rã · vừa','5 quân · 270ms'],
+  day:['Rã · dày','8 quân · 395ms'], domino:['Rã · đổ chồng','quân domino đổ rồi lách cách'],
+};
+const ra = document.getElementById('ra');
+for (const k of Object.keys(RA)) {
+  const [l, d] = RA_LABEL[k];
+  const b = document.createElement('button');
+  b.className = 'hot'; b.innerHTML = `${l}<b>${d}</b>`;
+  b.onclick = () => seq(RA[k]);
+  ra.appendChild(b);
+}
+
+const DON = [['a_no','5points','bản đang dùng — có cao độ'],
+             ['a_alt1','10points',''], ['a_alt2','refillPlayers',''],
+             ['a_alt3','pass',''], ['a_p4','domino','một quân']];
+const don = document.getElementById('don');
+for (const [k, l, d] of DON) {
+  const b = document.createElement('button');
+  b.innerHTML = `${l}<b>${d}</b>`;
+  b.onclick = () => one(k);
+  don.appendChild(b);
+}
+
+const VAI = [['a_nhac','Nhấc mảnh','takeChip'],['a_cam','Cắm chốt','putOnBoard'],
+             ['a_thang','Thắng màn','finishRound']];
+const vai = document.getElementById('vai');
+for (const [k, l, d] of VAI) {
+  const b = document.createElement('button');
+  b.innerHTML = `${l}<b>${d}</b>`;
+  b.onclick = () => one(k);
+  vai.appendChild(b);
+}
+</script>

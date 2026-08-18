@@ -4,7 +4,7 @@ import type { Color } from '../types';
 export const THEME = {
   // Board bằng NHỰA XÁM ĐÁ, không phải nền chàm: khung ngoài sáng hơn lòng board,
   // ô trống là hốc lõm tối hơn nữa. Ba mức xám này là thứ làm khối màu nổi bật.
-  background: 0x2b2440,
+  background: 0xd9d0f2,
   boardFrame: 0x5c6b80,
   cellEmpty: 0x2f3a4a,
   cellInner: 0x27303e,
@@ -55,8 +55,12 @@ export const HUD = {
   btnFaceTop: 0x7d63ef,
   icon: 0xe7e2fe,
 
-  titleFill: 0xa49cea,
-  titleOutline: 0x473b9e,
+  // ĐẢO TƯƠNG PHẢN cho nền sáng. Bộ cũ (fill tím nhạt #a49cea, viền tím đậm)
+  // chọn cho nền chàm tối: chữ sáng nổi trên nền tối. Nền giờ là tím nhạt nên
+  // đúng bộ đó làm chữ chìm hẳn — fill phải là tím ĐẬM, viền phải là gần trắng,
+  // giữ nguyên kiểu chữ dày hai lớp kiểu sticker.
+  titleFill: 0x5b46c4,
+  titleOutline: 0xf1ecff,
 
   pill: 0x1a1641,
   pillEdge: 0x2e2566,

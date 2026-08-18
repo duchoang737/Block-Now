@@ -16,6 +16,7 @@ import {
   drawLinkBar, drawPlasticPeg, drawPlasticSocket, drawSeatShadow, drawSeatSkirt, drawSeatSocket,
 } from './plastic';
 import { hasSprite, loadPegTextures, pegTexture, socketTexture } from './sprites';
+import { isSoundOn, loadSfx, setSoundOn, sfxCam, sfxNhac, sfxNo, sfxThang } from './sfx';
 import type { Cell, Color, GameResult, Level, PieceState, Shape } from '../types';
 
 // Nhịp animation đo trực tiếp từ video bản gốc (30fps, t≈90.9–91.6s):
@@ -92,7 +93,7 @@ const FRAME_GROOVE = 0x11142c; // rãnh tối nơi khung gặp lòng board
  * thêm thanh cầu nối, nên các hình chồng lên nhau; tô alpha thì chỗ chồng cộng dồn
  * và bóng ra thành vệt đen gắt, đậm hơn cả nền. Đây là màu đen .3 trộn sẵn với nền.
  */
-const FRAME_SHADOW = 0x1e192d;
+const FRAME_SHADOW = 0x9791a9;
 /**
  * Chiều cao THÀNH ĐỨNG của khung, theo bề rộng ô. Đây là thứ làm khung NỔI LÊN:
  * bóng đổ chỉ nói "có vật ở trên nền", còn thành đứng mới nói "vật này DÀY".
@@ -167,7 +168,7 @@ interface Button {
   action:
     | 'restart' | 'next' | 'addTime' | 'retry'
     | 'settings' | 'closeSettings' | 'toggleVibrate' | 'edit' | 'none'
-    | 'levels' | 'closeLevels' | 'pickLevel' | 'levelPage';
+    | 'levels' | 'closeLevels' | 'pickLevel' | 'levelPage' | 'toggleSound';
   /** với `pickLevel` là chỉ số màn; với `levelPage` là ±1 */
   idx?: number;
 }
@@ -248,6 +249,7 @@ export async function createGame(
   );
 
   await loadPegTextures();
+  loadSfx();
 
   /** Bể sprite dùng lại — mỗi frame vẽ lại toàn bộ, không tạo/huỷ object. */
   function makePool(parent: Container) {
@@ -341,7 +343,7 @@ export async function createGame(
 
   const gSettings = new Graphics();
   const setTitle = new Text({ text: 'Cài đặt', style: { fontFamily: hudFont, fontSize: 30, fill: THEME.white, fontWeight: '900' } });
-  const setRows = [0, 1, 2, 3, 4].map(
+  const setRows = [0, 1, 2, 3, 4, 5].map(
     () => new Text({ text: '', style: { fontFamily: font, fontSize: 21, fill: THEME.white, fontWeight: '700' } }),
   );
   settings.addChild(gSettings, setTitle, ...setRows);
@@ -391,10 +393,16 @@ export async function createGame(
    * Moi so dung HUD ben duoi phai cong lai nam gon trong con so nay; sua mot so ma
    * quen so kia thi vien thuoc gio tho xuong de len khung board.
    */
-  const HUD_H = 66;
+  const HUD_H = 90;
   let hudH = HUD_H;
-  // Cong lai cho HUD_H = 66: top 5 + ty 7 + pillY 33 + nua vien thuoc (24+11)/2
-  // = 62.5, con du 3.5 lam khoang tho truoc khi cham khung board.
+  // Cong lai cho HUD_H = 90: top 28 + ty 7 + pillY 33 + nua vien thuoc (24+11)/2
+  // = 85.5, con du 4.5 lam khoang tho truoc khi cham khung board.
+  //
+  // `top` la 28. Ban 5 lam chu "Level N" dinh sat mep tren man
+  // hinh: dien thoai co tai tho thi `safe.top` do lo, nhung tren trinh duyet va
+  // may khong tai thi `safe.top` = 0 va HUD cham thang vao canh. Tu day tro di,
+  // day HUD xuong them 1px la board mat dung 1px chieu cao: `hudH` tru THANG vao
+  // `availH`. Do la cai gia phai tra, khong co cach nao vong.
   /** Kéo bằng NGÓN TAY thì nhấc mảnh lên 1 ô để ngón không che mất nó. */
   let liftCells = 0;
 
@@ -439,6 +447,12 @@ export async function createGame(
   const edited = options.edited ?? new Set<string>();
   /** Bật/tắt rung — nhớ qua các phiên. WebView có thể chặn localStorage nên phải bọc. */
   let vibrate = true;
+  // Nhớ lựa chọn tiếng qua các phiên, giống hệt cách nhớ rung.
+  try {
+    setSoundOn(localStorage.getItem('ssj.sound') !== '0');
+  } catch {
+    /* WebView chặn localStorage thì mặc định BẬT */
+  }
   try {
     vibrate = localStorage.getItem('ssj.vibrate') !== '0';
   } catch {
@@ -1132,7 +1146,7 @@ export async function createGame(
     buttons = [];
 
     const btn = Math.round(50 * uiScale); // ≥44px: ngưỡng vùng chạm của mobile
-    const top = safe.top + Math.round(5 * uiScale);
+    const top = safe.top + Math.round(28 * uiScale);
     const padX = Math.round(12 * uiScale) + Math.max(safe.left, safe.right);
     // vùng chạm nới rộng hơn phần vẽ để ngón tay dễ trúng
     const grow = Math.round(8 * uiScale);
@@ -1217,7 +1231,7 @@ export async function createGame(
 
     const pw = Math.min(W - 48 * uiScale, 340 * uiScale);
     const rowH = Math.round(52 * uiScale);
-    const ph = Math.round(46 * uiScale) + rowH * 5 + Math.round(20 * uiScale);
+    const ph = Math.round(46 * uiScale) + rowH * 6 + Math.round(20 * uiScale);
     const pxs = Math.round(W / 2 - pw / 2);
     const pys = Math.round(H / 2 - ph / 2);
     gSettings.roundRect(pxs, pys + 6, pw, ph, 22 * uiScale).fill({ color: HUD.shadow, alpha: 0.4 });
@@ -1231,6 +1245,7 @@ export async function createGame(
     const rows: { text: string; action: Button['action'] }[] = [
       { text: `☰  Chọn màn  ·  đang ở ${levelNo(session.level.id)}`, action: 'levels' },
       { text: `Rung phản hồi:  ${vibrate ? 'Bật' : 'Tắt'}`, action: 'toggleVibrate' },
+      { text: `Tiếng động:  ${isSoundOn() ? 'Bật' : 'Tắt'}`, action: 'toggleSound' },
       { text: '✎  Sửa màn này', action: 'edit' },
       { text: 'Chơi lại màn', action: 'restart' },
       { text: 'Đóng', action: 'closeSettings' },
@@ -1638,6 +1653,16 @@ export async function createGame(
         }
         if (vibrate) buzz(12);
       }
+      if (btn.action === 'toggleSound') {
+        const v = !isSoundOn();
+        setSoundOn(v);
+        try {
+          localStorage.setItem('ssj.sound', v ? '1' : '0');
+        } catch {
+          /* WebView chặn thì thôi, chỉ mất phần nhớ qua phiên */
+        }
+        if (v) sfxCam(); // nghe thử ngay để biết vừa bật cái gì
+      }
       if (btn.action === 'addTime') {
         if (session.addTime(30_000, now())) overlayAt = Infinity;
       }
@@ -1685,6 +1710,7 @@ export async function createGame(
     // ngón tay che mất mảnh → nhấc lên 1 ô; chuột thì không cần
     liftCells = ev.pointerType === 'touch' ? 1 : 0;
     buzz(8);
+    sfxNhac();
 
     drag = {
       id: hit.id,
@@ -1853,8 +1879,18 @@ export async function createGame(
     const result = session.move(pieceId, snap, now());
     if (!result) return;
 
-    if (result.poppedHolders.length > 0) buzz([0, 18, 45, 30]);
-    else if (result.pluggedLayers > 0) buzz(14);
+    // Nổ ĐÈ lên cắm: một nước có thể vừa cắm vừa làm khay nổ, mà nghe cả hai
+    // cùng lúc thì hai tiếng giẫm lên nhau. Nổ là sự kiện lớn hơn nên nó nói thay.
+    if (result.poppedHolders.length > 0) {
+      buzz([0, 18, 45, 30]);
+      sfxNo();
+    } else if (result.pluggedLayers > 0) {
+      buzz(14);
+      sfxCam();
+    }
+    // Thắng màn: chờ cho cú nổ cuối nghe xong rồi mới reo, không thì hai tiếng
+    // chồng lên nhau và mất cả hai.
+    if (session.status === 'cleared') window.setTimeout(sfxThang, 420);
 
     const t = now();
     const landBy = new Map<string, number>();
