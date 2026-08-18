@@ -123,6 +123,25 @@ const SEAT_SKIRT = true;
  */
 const MAGNET_R2 = 2.25;
 
+/**
+ * Ngón tay phải ĐỨNG YÊN bấy nhiêu mili-giây ở chỗ cắm được thì chốt mới nhảy vào.
+ *
+ * 200ms là quãng ngắn hơn một nhịp chớp mắt: mang mảnh tới cắm thì không ai thấy
+ * có độ trễ, còn kéo lướt qua một khay khớp trên đường đi thì không đủ lâu để dính.
+ * Không có ngưỡng này thì mọi cú đi ngang đều bị hút vào, mà game không có Undo.
+ */
+const SEAT_HOLD = 200;
+
+/**
+ * Ngưỡng "ngón tay coi như đứng im", bằng BÌNH PHƯƠNG số ô (0.12² ≈ 0.0144).
+ *
+ * Rung tay khi giữ nguyên một chỗ chỉ lệch vài phần trăm ô, còn rê thật thì mỗi
+ * khung hình đã đi hơn thế nhiều. Đây là chỗ phân biệt "mang tới cắm" với "đi
+ * ngang qua" — không phải chuyện mảnh đứng đâu, vì mảnh kẹt sát khay là chuyện
+ * bình thường trên đường đi.
+ */
+const STILL_R2 = 0.0144;
+
 /** Lưới bộ chọn màn: 5×5 một trang ⇒ 50 màn gọn trong hai trang. */
 const LEVEL_COLS = 5;
 const LEVEL_ROWS = 5;
@@ -447,6 +466,13 @@ export async function createGame(
         snap: Cell;
         check: DropCheck;
         moved: boolean;
+        /**
+         * Mốc giờ mảnh BẮT ĐẦU đứng ở một chỗ cắm được, `null` nếu chỗ đang đứng
+         * không cắm được gì. Đây là thứ phân biệt "mang tới cắm" với "đi ngang qua".
+         */
+        seatAt: number | null;
+        /** Vị trí ngón tay ở lần `onPointerMove` gần nhất, đo bằng ô. */
+        lastPt: { rf: number; cf: number };
       } = null;
 
   const now = () => performance.now();
@@ -1666,6 +1692,8 @@ export async function createGame(
       grabC: cf - hit.anchor[1],
       snap: [hit.anchor[0], hit.anchor[1]],
       check: checkDrop(session.state, hit, hit.anchor),
+      seatAt: null,
+      lastPt: { rf: 0, cf: 0 },
       moved: false,
     };
   }
@@ -1684,6 +1712,7 @@ export async function createGame(
     if (!piece) return;
 
     const { rf, cf } = toGrid(ev);
+    if (drag.lastPt.rf === 0 && drag.lastPt.cf === 0) drag.lastPt = { rf, cf };
     const wantR = rf - drag.grabR - liftCells;
     const wantC = cf - drag.grabC;
 
@@ -1749,20 +1778,44 @@ export async function createGame(
       drag.check = checkDrop(session.state, piece, drag.snap);
     }
 
-    // CẮM NGAY GIỮA LÚC KÉO — không đợi thả tay.
+    // Bấm giờ cho cú cắm giữa lúc kéo, và đồng hồ này đo NGÓN TAY chứ không đo mảnh.
     //
-    // Hễ mảnh trượt tới chỗ cắm được là chốt nhảy vào lỗ luôn, ngón tay chưa cần
-    // nhấc lên. Cùng với nam châm ở trên, người chơi chỉ việc kéo mảnh lại gần
-    // khay chứ không phải canh đúng ô rồi thả.
+    // Bản đầu chỉ hỏi "mảnh có đang đứng ở chỗ cắm được không" rồi đếm giờ. Sai:
+    // mảnh KẸT ở ô cắm suốt quãng ngón tay còn rê phía trên khay (khay là khối đặc,
+    // nó không đi tiếp được), nên cú lướt qua vẫn đủ 200ms và vẫn bị hút vào —
+    // đo được đúng như vậy khi thử bằng cú kéo lướt.
     //
-    // Chốt xong là KẾT THÚC cú kéo (`drag = null`): cắm rồi thì `unlink` có thể
-    // xé mảnh thành mấy mảnh con, mà cái đang nằm dưới ngón tay lúc đó là mảnh
-    // nào thì không còn xác định được nữa — kéo tiếp là kéo nhầm.
-    if (drag.check.ok && drag.check.seats.length > 0) {
-      const { id, snap } = drag;
-      drag = null;
-      commitMove(id, snap);
-    }
+    // Ngón tay còn dịch chuyển ⇒ người chơi còn đang đi, chưa quyết định gì: đặt lại
+    // đồng hồ. Chỉ khi ngón tay thật sự đứng im mới tính giờ.
+    const moved2 = (rf - drag.lastPt.rf) ** 2 + (cf - drag.lastPt.cf) ** 2;
+    drag.lastPt = { rf, cf };
+    const canSeat = drag.check.ok && drag.check.seats.length > 0;
+    if (!canSeat || moved2 > STILL_R2) drag.seatAt = null;
+    else drag.seatAt = drag.seatAt ?? now();
+  }
+
+  /**
+   * CẮM GIỮA LÚC KÉO — không đợi thả tay, nhưng phải ĐỨNG LẠI đã.
+   *
+   * Bản đầu cắm ngay khi mảnh chạm chỗ cắm được. Chơi ra thì hỏng: mảnh chỉ ĐI
+   * NGANG QUA một khay khớp trên đường sang chỗ khác cũng bị hút vào, mà game
+   * không có Undo nên mất luôn nước đó. Ngưỡng `SEAT_HOLD` phân biệt đúng hai ý
+   * định đó: mang tới cắm thì ngón tay dừng lại, đi ngang thì không.
+   *
+   * PHẢI gọi từ vòng lặp khung hình chứ không phải từ `onPointerMove`: ngón tay
+   * đứng yên là trình duyệt ngừng bắn sự kiện move, mà "đứng yên" lại chính là
+   * điều kiện ta đang chờ.
+   *
+   * Cắm xong là KẾT THÚC cú kéo: `unlink` có thể xé mảnh thành mấy mảnh con, mà
+   * cái đang nằm dưới ngón tay lúc đó là mảnh nào thì không còn xác định được —
+   * cho kéo tiếp là kéo nhầm.
+   */
+  function tickSeatHold(): void {
+    if (!drag || drag.seatAt === null || session.status !== 'playing') return;
+    if (now() - drag.seatAt < SEAT_HOLD) return;
+    const { id, snap } = drag;
+    drag = null;
+    commitMove(id, snap);
   }
 
   function onPointerUp(): void {
@@ -1881,6 +1934,7 @@ export async function createGame(
       options.onComplete?.(session.result());
     }
     for (const [k, landAt] of pendingSeats) if (t >= landAt) pendingSeats.delete(k);
+    tickSeatHold();
     layout();
     drawBoard();
     drawObstacles();
