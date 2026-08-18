@@ -115,6 +115,14 @@ const SEAT_SOCKET = false;
 /** Đắp thêm thành đứng dưới sprite chốt cho viên DÀY ra — xem `drawSeatSkirt`. */
 const SEAT_SKIRT = true;
 
+/**
+ * Tầm hút của NAM CHÂM CẮM, tính bằng BÌNH PHƯƠNG số ô (1.5² = 2.25).
+ *
+ * 1.5 ô là "ngón tay đang ở ngay cạnh khay": đủ rộng để tha thứ cho cú kéo lệch
+ * nửa ô, đủ hẹp để mảnh không tự nhảy vào khay khi người chơi chỉ đi ngang qua.
+ */
+const MAGNET_R2 = 2.25;
+
 /** Lưới bộ chọn màn: 5×5 một trang ⇒ 50 màn gọn trong hai trang. */
 const LEVEL_COLS = 5;
 const LEVEL_ROWS = 5;
@@ -353,7 +361,21 @@ export async function createGame(
   let originX = 0;
   let originY = 0;
   let uiScale = 1;
-  let hudH = 84;
+  /**
+   * CHIEU CAO HUD, theo `uiScale` — xem chu thich tieng Viet ben duoi.
+   *
+   * HUD xep BA TANG chong doc (nut / ten man / vien thuoc gio) nen no an chieu cao
+   * rat nhanh, ma chieu cao do tru THANG vao `availH` cua board: HUD cao them 20px
+   * la o board nho di thay ro tren may doc. Ban dau 84 la chep thang ti le tu anh
+   * mau, chua tinh chuyen anh mau chup may man to hon.
+   *
+   * Moi so dung HUD ben duoi phai cong lai nam gon trong con so nay; sua mot so ma
+   * quen so kia thi vien thuoc gio tho xuong de len khung board.
+   */
+  const HUD_H = 66;
+  let hudH = HUD_H;
+  // Cong lai cho HUD_H = 66: top 5 + ty 7 + pillY 33 + nua vien thuoc (24+11)/2
+  // = 62.5, con du 3.5 lam khoang tho truoc khi cham khung board.
   /** Kéo bằng NGÓN TAY thì nhấc mảnh lên 1 ô để ngón không che mất nó. */
   let liftCells = 0;
 
@@ -491,7 +513,7 @@ export async function createGame(
     const safe = safeInsets();
 
     uiScale = Math.max(0.78, Math.min(1.3, W / 430));
-    hudH = Math.round(84 * uiScale);
+    hudH = Math.round(HUD_H * uiScale);
 
     const padX = Math.round(12 * uiScale) + Math.max(safe.left, safe.right);
     // đang sửa màn thì bảng công cụ chiếm đáy màn hình, board phải lùi lên
@@ -1083,8 +1105,8 @@ export async function createGame(
     gHud.clear();
     buttons = [];
 
-    const btn = Math.round(57 * uiScale); // ≥44px: ngưỡng vùng chạm của mobile
-    const top = safe.top + Math.round(7 * uiScale);
+    const btn = Math.round(50 * uiScale); // ≥44px: ngưỡng vùng chạm của mobile
+    const top = safe.top + Math.round(5 * uiScale);
     const padX = Math.round(12 * uiScale) + Math.max(safe.left, safe.right);
     // vùng chạm nới rộng hơn phần vẽ để ngón tay dễ trúng
     const grow = Math.round(8 * uiScale);
@@ -1104,7 +1126,7 @@ export async function createGame(
     // chữ trườn lên nút.
     const label = hudLabel(session.level);
     const room = rx - (padX + btn) - Math.round(18 * uiScale);
-    let titleSize = Math.round(28 * uiScale);
+    let titleSize = Math.round(25 * uiScale);
     setChunkyText(titleBack, titleFront, label, titleSize, HUD.titleFill, HUD.titleOutline);
     if (titleFront.width > room) {
       titleSize = Math.max(11, Math.floor((titleSize * room) / titleFront.width));
@@ -1113,7 +1135,7 @@ export async function createGame(
 
     // Tên nằm CAO hơn tâm nút, viên thuốc nằm thấp hơn — hai nút bắc qua cả hai
     // hàng, đúng như mẫu.
-    const ty = top + Math.round(11 * uiScale);
+    const ty = top + Math.round(7 * uiScale);
     for (const t of [titleBack, titleFront]) {
       t.x = W / 2;
       t.y = ty;
@@ -1123,14 +1145,14 @@ export async function createGame(
     const remaining = session.clock.remainingMs;
     const danger = remaining <= 10_000;
     const warn = !danger && remaining <= 30_000;
-    const timeSize = Math.round(27 * uiScale);
+    const timeSize = Math.round(24 * uiScale);
     const timeFill = danger ? THEME.timerDanger : warn ? THEME.timerWarn : HUD.timeFill;
     // đệm 0 cho phút: mẫu là `01:30`, và bề rộng cố định thì viên thuốc không co
     // giãn mỗi khi đồng hồ rơi từ 10:00 xuống 9:59
     setChunkyText(timeBack, timeFront, fmtTime(remaining).padStart(5, '0'), timeSize, timeFill, HUD.timeOutline);
 
-    const pillH = Math.round(timeSize + 14 * uiScale);
-    const pillY = ty + Math.round(39 * uiScale);
+    const pillH = Math.round(timeSize + 11 * uiScale);
+    const pillY = ty + Math.round(33 * uiScale);
     const wd = pillH * 0.6;
     const gapW = pillH * 0.2;
     const padIn = pillH * 0.4;
@@ -1686,6 +1708,39 @@ export async function createGame(
       if (nr === r && nc === c) break; // không lối nào gần hơn → bị chặn, dừng
       r = nr;
       c = nc;
+    }
+
+    // NAM CHÂM CẮM — "kéo lại gần khay là cắm được".
+    //
+    // Vòng trượt ở trên chỉ biết tiến GẦN CON TRỎ hơn, chứ không biết tiến tới chỗ
+    // CẮM ĐƯỢC. Ba chỗ hay hụt, và cả ba đều là lúc ý định người chơi đã quá rõ:
+    //   · ngón tay rê thẳng lên Ô CỦA LỖ. Khay là khối đặc nên mảnh không vào được,
+    //     nó dừng ở ô kề — nhưng ô kề gần ngón tay nhất chưa chắc là ô cắm được.
+    //   · mảnh nhiều chốt mà chốt khớp lỗ KHÔNG phải chốt đang cầm: muốn cắm thì
+    //     phải lệch cả mảnh đi một ô, ngược với chỗ ngón tay đang chỉ.
+    //   · tiến chéo: không hướng đơn lẻ nào vừa hợp lệ vừa gần hơn, mảnh đứng khựng
+    //     cách chỗ cắm đúng một ô.
+    //
+    // Nên: chỗ đang đứng mà không cắm được gì, còn một ô KỀ BÊN thì cắm được, và
+    // ngón tay đang ở ngay quanh đó ⇒ hút sang ô đó. Chỉ xét 4 ô kề, tức ĐÚNG MỘT
+    // bước trượt, nên nước đi vẫn hợp luật R-MOVE và `canReach` trong engine vẫn
+    // duyệt — nam châm chỉ bỏ qua sự vụng về của ngón tay, không bỏ qua luật.
+    const here = checkDrop(session.state, piece, [r, c]);
+    if (here.ok && here.seats.length === 0) {
+      let best: { cell: Cell; seats: number; d: number } | null = null;
+      for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]] as Cell[]) {
+        const a: Cell = [r + dr, c + dc];
+        const d = dist(a[0], a[1]);
+        if (d > MAGNET_R2) continue; // ngón tay còn ở xa thì đừng tự ý hút
+        const chk = checkDrop(session.state, piece, a);
+        if (!chk.ok || chk.seats.length === 0) continue;
+        if (!best || chk.seats.length > best.seats || (chk.seats.length === best.seats && d < best.d))
+          best = { cell: a, seats: chk.seats.length, d };
+      }
+      if (best) {
+        r = best.cell[0];
+        c = best.cell[1];
+      }
     }
 
     if (r !== drag.snap[0] || c !== drag.snap[1]) {
