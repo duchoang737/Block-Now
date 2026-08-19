@@ -11,3 +11,6 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 *.log
+
+# APK build ra tu `dist/` — nang 2MB, dung lai bang cach chay lai build.
+dist/

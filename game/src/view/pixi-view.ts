@@ -17,6 +17,7 @@ import {
 } from './plastic';
 import { hasSprite, loadPegTextures, pegTexture, socketTexture } from './sprites';
 import { isSoundOn, loadSfx, setSoundOn, sfxCam, sfxNhac, sfxNo, sfxThang } from './sfx';
+import { markTaught, nextLesson, resetTaught, type Lesson } from './tutorial';
 import type { Cell, Color, GameResult, Level, PieceState, Shape } from '../types';
 
 // Nhịp animation đo trực tiếp từ video bản gốc (30fps, t≈90.9–91.6s):
@@ -168,7 +169,8 @@ interface Button {
   action:
     | 'restart' | 'next' | 'addTime' | 'retry'
     | 'settings' | 'closeSettings' | 'toggleVibrate' | 'edit' | 'none'
-    | 'levels' | 'closeLevels' | 'pickLevel' | 'levelPage' | 'toggleSound';
+    | 'levels' | 'closeLevels' | 'pickLevel' | 'levelPage' | 'toggleSound'
+    | 'closeTut' | 'replayTut';
   /** với `pickLevel` là chỉ số màn; với `levelPage` là ±1 */
   idx?: number;
 }
@@ -239,12 +241,14 @@ export async function createGame(
   const fxSprites = new Container();
   const hud = new Container();
   const overlay = new Container();
+  const tutorial = new Container();
   const settings = new Container();
   const levels = new Container();
   const editor = new Container();
   app.stage.addChild(
     gBoard, gObstacle, obstacleLabels, gHolders, holderSprites, gGhost, gPieces, pieceSprites,
-    gShutter, shutterLabels, gDrag, dragSprites, gFx, fxSprites, hud, editor, overlay, settings,
+    gShutter, shutterLabels, gDrag, dragSprites, gFx, fxSprites, hud, editor, overlay, tutorial,
+    settings,
     levels,
   );
 
@@ -340,10 +344,14 @@ export async function createGame(
   const overBtnA = new Text({ text: '', style: { fontFamily: font, fontSize: 24, fill: THEME.white, fontWeight: '700' } });
   const overBtnB = new Text({ text: '', style: { fontFamily: font, fontSize: 24, fill: 0x1e1a4a, fontWeight: '700' } });
   overlay.addChild(gOverlay, overTitle, overSub, overBtnA, overBtnB);
+  const gTut = new Graphics();
+  const tutTitle = new Text({ text: '', style: { fontFamily: font, fontSize: 22, fill: THEME.white, fontWeight: '800' } });
+  tutorial.addChildAt(gTut, 0);
+  tutorial.addChild(tutTitle);
 
   const gSettings = new Graphics();
   const setTitle = new Text({ text: 'Cài đặt', style: { fontFamily: hudFont, fontSize: 30, fill: THEME.white, fontWeight: '900' } });
-  const setRows = [0, 1, 2, 3, 4, 5].map(
+  const setRows = [0, 1, 2, 3, 4, 5, 6].map(
     () => new Text({ text: '', style: { fontFamily: font, fontSize: 21, fill: THEME.white, fontWeight: '700' } }),
   );
   settings.addChild(gSettings, setTitle, ...setRows);
@@ -441,6 +449,13 @@ export async function createGame(
   let editDrag: { t: ed.MoveTarget; grab: Cell; d: Cell; ok: boolean } | null = null;
 
   let settingsOpen = false;
+  /** Bài đang hiện; đồng hồ DỪNG suốt lúc nó hiện — đọc hướng dẫn mà bị trừ giờ là bất công. */
+  let lesson: Lesson | null = null;
+  const tutLines = [0, 1, 2, 3].map(() => {
+    const t = new Text({ text: '', style: { fontFamily: font, fontSize: 16, fill: THEME.white } });
+    tutorial.addChild(t);
+    return t;
+  });
   let levelsOpen = false;
   let levelPage = 0;
   const catalog = options.catalog ?? [level];
@@ -526,6 +541,7 @@ export async function createGame(
     rebuildObstacleTexts();
     session.begin(now());
     if (document.hidden) session.pause(now());
+    showLesson(nextLesson(next));
     options.onLevelChange?.(next);
   }
 
@@ -1231,7 +1247,7 @@ export async function createGame(
 
     const pw = Math.min(W - 48 * uiScale, 340 * uiScale);
     const rowH = Math.round(52 * uiScale);
-    const ph = Math.round(46 * uiScale) + rowH * 6 + Math.round(20 * uiScale);
+    const ph = Math.round(46 * uiScale) + rowH * 7 + Math.round(20 * uiScale);
     const pxs = Math.round(W / 2 - pw / 2);
     const pys = Math.round(H / 2 - ph / 2);
     gSettings.roundRect(pxs, pys + 6, pw, ph, 22 * uiScale).fill({ color: HUD.shadow, alpha: 0.4 });
@@ -1246,6 +1262,7 @@ export async function createGame(
       { text: `☰  Chọn màn  ·  đang ở ${levelNo(session.level.id)}`, action: 'levels' },
       { text: `Rung phản hồi:  ${vibrate ? 'Bật' : 'Tắt'}`, action: 'toggleVibrate' },
       { text: `Tiếng động:  ${isSoundOn() ? 'Bật' : 'Tắt'}`, action: 'toggleSound' },
+      { text: '?  Xem lại hướng dẫn', action: 'replayTut' },
       { text: '✎  Sửa màn này', action: 'edit' },
       { text: 'Chơi lại màn', action: 'restart' },
       { text: 'Đóng', action: 'closeSettings' },
@@ -1532,6 +1549,101 @@ export async function createGame(
     );
   }
 
+  /**
+   * Bật một bài và DỪNG ĐỒNG HỒ. Không dừng thì người chơi vừa đọc vừa mất giờ —
+   * mà bài chỉ hiện ở đúng màn đầu tiên của một cơ chế, tức là màn họ ít quen nhất.
+   */
+  function showLesson(l: Lesson | null): void {
+    lesson = l;
+    if (l) session.pause(now());
+  }
+
+  function closeLesson(): void {
+    if (!lesson) return;
+    markTaught(lesson.id);
+    lesson = null;
+    session.resume(now());
+  }
+
+  /**
+   * Thẻ hướng dẫn — khay dưới đáy, KHÔNG che board.
+   *
+   * Vẽ ở đáy chứ không vẽ giữa màn: bài nào cũng nói về thứ đang có TRÊN board
+   * (khối nhiều màu, chốt hai lớp, tảng băng), nên che board đi là bắt người chơi
+   * đọc chay rồi tự hình dung. Để board lộ ra thì vừa đọc vừa nhìn thấy vật thật.
+   */
+  function drawTutorial(): void {
+    tutorial.visible = lesson !== null;
+    tutTitle.visible = tutorial.visible;
+    for (const t of tutLines) t.visible = tutorial.visible;
+    gTut.clear();
+    if (!lesson) return;
+
+    const W = app.screen.width;
+    const H = app.screen.height;
+    const safe = safeInsets();
+    const pad = Math.round(18 * uiScale);
+    const gap = Math.round(7 * uiScale);
+    const bh = Math.round(40 * uiScale);
+    const cardW = Math.min(W - Math.round(24 * uiScale), Math.round(430 * uiScale));
+    const wrapW = cardW - pad * 2;
+
+    // ĐẶT CHỮ TRƯỚC, ĐO SAU, RỒI MỚI DỰNG THẺ.
+    //
+    // Dòng nào cũng có thể tự xuống hàng, nên chiều cao thật chỉ biết được sau khi
+    // Pixi dựng xong text. Bản đầu tôi đặt khoảng dòng cố định và ba dòng chồng lên
+    // nhau ngay ở màn đầu tiên. Đo bằng `t.height` là hết.
+    tutTitle.text = lesson.title;
+    tutTitle.style.fontSize = Math.round(21 * uiScale);
+    tutTitle.anchor.set(0, 0);
+
+    const body = lesson.body.slice(0, tutLines.length - 1);
+    body.forEach((line, k) => {
+      const t = tutLines[k];
+      t.text = `•  ${line}`;
+      t.style.fontSize = Math.round(15 * uiScale);
+      t.style.fill = HUD.icon;
+      t.style.wordWrap = true;
+      t.style.wordWrapWidth = wrapW;
+      t.style.lineHeight = Math.round(20 * uiScale);
+      t.anchor.set(0, 0);
+    });
+    for (let k = body.length; k < tutLines.length - 1; k++) tutLines[k].visible = false;
+
+    const bodyH = body.reduce((n, _l, k) => n + tutLines[k].height + gap, 0);
+    const cardH = pad * 2 + tutTitle.height + gap * 2 + bodyH + bh;
+    const x = Math.round((W - cardW) / 2);
+    const y = Math.round(H - safe.bottom - cardH - 14 * uiScale);
+
+    gTut.roundRect(x, y + 6, cardW, cardH, 20 * uiScale).fill({ color: HUD.shadow, alpha: 0.45 });
+    gTut.roundRect(x, y, cardW, cardH, 20 * uiScale).fill(HUD.sheet);
+
+    tutTitle.x = x + pad;
+    tutTitle.y = y + pad;
+    let cy = y + pad + tutTitle.height + gap * 2;
+    body.forEach((_l, k) => {
+      tutLines[k].x = x + pad;
+      tutLines[k].y = cy;
+      cy += tutLines[k].height + gap;
+    });
+
+    const by = y + cardH - pad - bh + Math.round(6 * uiScale);
+    gTut.roundRect(x + pad, by, cardW - pad * 2, bh, bh / 2).fill(HUD.btnFace);
+    const ok = tutLines[tutLines.length - 1];
+    ok.text = 'Đã hiểu';
+    ok.style.fontSize = Math.round(17 * uiScale);
+    ok.style.fill = THEME.white;
+    ok.style.wordWrap = false;
+    ok.anchor.set(0.5);
+    ok.x = W / 2;
+    ok.y = by + bh / 2;
+    ok.visible = true;
+
+    // Thẻ nuốt MỌI cú chạm: đang đọc mà lỡ kéo trúng board là mất một nước, mà
+    // game không có Undo.
+    buttons = [{ x: 0, y: 0, w: W, h: H, action: 'closeTut' }];
+  }
+
   function drawOverlay(): void {
     const W = app.screen.width;
     const H = app.screen.height;
@@ -1653,6 +1765,16 @@ export async function createGame(
         }
         if (vibrate) buzz(12);
       }
+      if (btn.action === 'closeTut') {
+        closeLesson();
+        return;
+      }
+      if (btn.action === 'replayTut') {
+        resetTaught();
+        settingsOpen = false;
+        showLesson(nextLesson(session.level));
+        return;
+      }
       if (btn.action === 'toggleSound') {
         const v = !isSoundOn();
         setSoundOn(v);
@@ -1708,6 +1830,7 @@ export async function createGame(
     if (!hit) return;
 
     // ngón tay che mất mảnh → nhấc lên 1 ô; chuột thì không cần
+    if (lesson) return; // đang đọc hướng dẫn thì board khoá
     liftCells = ev.pointerType === 'touch' ? 1 : 0;
     buzz(8);
     sfxNhac();
@@ -1983,12 +2106,14 @@ export async function createGame(
     drawSettings();
     drawLevels();
     drawEditor();
+    drawTutorial();
   };
   app.ticker.add(tick);
 
   rebuildObstacleTexts();
   session.begin(now());
   if (document.hidden) session.pause(now());
+  showLesson(nextLesson(session.level));
 
   (window as unknown as Record<string, unknown>).__ssj = {
     app,
